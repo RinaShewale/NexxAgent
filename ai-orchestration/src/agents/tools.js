@@ -4,7 +4,7 @@ import * as z from "zod";
 
 
 const SANDBOX_URL =
-  "http://sandbox-service-34514d22-80e4-4bbd-8758-e8896179e258:3000";
+  "http://sandbox-service-baa427cb-bf15-4ad3-afd1-f2be8bc732c3:3000";
 
 
 
