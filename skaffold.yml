@@ -1,0 +1,117 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+
+metadata:
+  name: capstone
+
+
+build:
+  tagPolicy:
+    sha256: {}
+
+  local:
+    push: false
+
+
+  artifacts:
+
+    # =====================
+    # Sandbox Server
+    # =====================
+    - image: sandbox
+      context: sandbox/server
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.json"
+
+
+    # =====================
+    # Router
+    # =====================
+    - image: router
+      context: sandbox/router
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.json"
+
+
+    # =====================
+    # Agent
+    # =====================
+    - image: agent
+      context: sandbox/agent
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.json"
+
+
+    # =====================
+    # Template React App
+    # =====================
+    - image: template
+      context: sandbox/templete
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.jsx"
+          - "**/*.css"
+          - "**/*.json"
+
+
+    # =====================
+    # AI Orchestration
+    # =====================
+    - image: ai-orchestration
+      context: ai-orchestration
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.mjs"
+          - "**/*.json"
+
+
+
+manifests:
+
+  rawYaml:
+
+    # RBAC
+    - k8s/rbac.yml
+
+
+    # Sandbox
+    - k8s/sandbox-deployment.yml
+    - k8s/sandbox-service.yml
+
+
+    # Router
+    - k8s/router-deployment.yml
+    - k8s/router-service.yml
+
+
+    # AI
+    - k8s/ai-deployment.yml
+    - k8s/ai-service.yml
+
+
+    # Ingress
+    - k8s/ingress.yml
+
+
+
+deploy:
+
+  kubectl: {}
