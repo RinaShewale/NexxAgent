@@ -7,12 +7,17 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "6000"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "6000"
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    
+
+    # Sticky sessions
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "route"
 
 spec:
   ingressClassName: nginx
 
   rules:
-    # Main localhost routes
+    # API Routes
     - host: localhost
       http:
         paths:
@@ -32,7 +37,7 @@ spec:
                 port:
                   number: 3000
 
-    # Preview URLs
+    # Preview Routes
     - host: "*.preview.localhost"
       http:
         paths:
@@ -44,7 +49,7 @@ spec:
                 port:
                   number: 3000
 
-    # Agent URLs
+    # Agent Routes
     - host: "*.agent.localhost"
       http:
         paths:

@@ -5,7 +5,7 @@ const AgentRouter = Router();
 
 AgentRouter.post("/invoke", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, projectId } = req.body;
 
     if (!message) {
       return res.status(400).json({
@@ -14,26 +14,55 @@ AgentRouter.post("/invoke", async (req, res) => {
       });
     }
 
-    const response = await agent.invoke({
-      messages: [
-        {
-          role: "user",
-          content: message,
+    // Get the stream FIRST (await it), so any setup errors
+    // (bad config, auth failure, etc.) are caught before
+    // we commit to sending SSE headers.
+    const stream = await agent.stream(
+      {
+        messages: [
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+      },
+      {
+        context: {
+          projectId,
         },
-      ],
+        streamMode: "custom",
+      }
+    );
+
+    // Only now do we know streaming will actually happen,
+    // so it's safe to write the SSE headers.
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
     });
 
-    return res.status(200).json({
-      success: true,
-      result: response.messages.at(-1).content,
-    });
+    for await (const chunk of stream) {
+      console.log(chunk);
+      res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+    }
+
+    res.write("event: end\n");
+    res.write("data: done\n\n");
+    res.end();
   } catch (error) {
     console.error(error);
 
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.write(`event: error\n`);
+    res.write(`data: ${JSON.stringify({ message: error.message })}\n\n`);
+    res.end();
   }
 });
 
