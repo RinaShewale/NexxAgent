@@ -83,35 +83,95 @@ build:
           - "**/*.json"
 
 
+    # =====================
+    # Auth Service
+    # =====================
+    - image: auth
+      context: auth
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.json"
+
+
+    # =====================
+    # Notification Service
+    # =====================
+    - image: notification
+      context: notification
+      docker:
+        dockerfile: dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.json"
+
+
 
 manifests:
-
   rawYaml:
 
-    # RBAC
+    # =====================
+    # RBAC + Secrets
+    # =====================
     - k8s/rbac.yml
+    - k8s/secrets.yml
 
 
+    # =====================
     # Sandbox
+    # =====================
     - k8s/sandbox-deployment.yml
     - k8s/sandbox-service.yml
 
 
+    # =====================
     # Router
+    # =====================
     - k8s/router-deployment.yml
     - k8s/router-service.yml
 
 
+    # =====================
     # AI
+    # =====================
     - k8s/ai-deployment.yml
     - k8s/ai-service.yml
 
 
+    # =====================
+    # Auth
+    # =====================
+    - k8s/auth-deployment.yml
+    - k8s/auth-service.yml
+
+
+    # =====================
+    # Notification
+    # =====================
+    - k8s/notification-deployment.yml
+    - k8s/notification-service.yml
+
+
+    # =====================
     # Ingress
+    # =====================
     - k8s/ingress.yml
 
 
 
 deploy:
-
   kubectl: {}
+
+
+# =====================
+# Port Forwarding
+# =====================
+portForward:
+  - resourceType: service
+    resourceName: ingress-nginx-controller
+    namespace: ingress-nginx
+    port: 80
+    localPort: 80

@@ -36,9 +36,14 @@ spec:
             - name: http
               containerPort: 3000
 
+
           env:
-            - name: NODE_ENV
-              value: development
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: database
+                  key: REDIS_URL
+
 
           resources:
             requests:
@@ -48,12 +53,14 @@ spec:
               cpu: "500m"
               memory: "400Mi"
 
+
           livenessProbe:
             httpGet:
               path: /api/sandbox/health
               port: 3000
             initialDelaySeconds: 30
             timeoutSeconds: 10
+
 
           readinessProbe:
             httpGet:
@@ -62,12 +69,15 @@ spec:
             initialDelaySeconds: 30
             timeoutSeconds: 10
 
+
           volumeMounts:
             - name: sandbox-storage
               mountPath: /app/data
 
+
       volumes:
         - name: sandbox-storage
           emptyDir: {}
+
 
       restartPolicy: Always

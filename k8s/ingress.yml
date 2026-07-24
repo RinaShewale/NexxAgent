@@ -7,7 +7,6 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "6000"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "6000"
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    
 
     # Sticky sessions
     nginx.ingress.kubernetes.io/affinity: "cookie"
@@ -34,6 +33,17 @@ spec:
             backend:
               service:
                 name: ai-service
+                port:
+                  number: 3000
+
+            # Auth Google OAuth
+          - path: /api/auth
+            pathType: Prefix
+
+            backend:
+              service:
+                name: auth-service
+
                 port:
                   number: 3000
 

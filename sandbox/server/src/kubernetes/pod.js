@@ -222,3 +222,26 @@ export async function createPod(sandboxID) {
 
 
 }
+
+
+
+export async function deletePod(sandboxId) {
+  try {
+    const response = await k8sCoreV1Api.deleteNamespacedPod(
+      {
+        namespace: "default",
+        name: `sandbox-pod-${sandboxId}`,
+      },
+      {
+        gracePeriodSeconds: 0,
+      }
+    );
+
+    console.log(`✅ Pod ${sandboxId} deleted`);
+
+    return response;
+  } catch (error) {
+    console.error("Delete Pod Error:", error.message);
+    throw error;
+  }
+}

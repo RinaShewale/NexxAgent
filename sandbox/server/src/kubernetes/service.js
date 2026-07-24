@@ -45,3 +45,21 @@ export const createService = async (sandboxID) => {
 
   return response;
 };
+
+
+
+export async function deleteService(sandboxId) {
+  try {
+    const response = await k8sCoreV1Api.deleteNamespacedService({
+      namespace: "default",
+      name: `sandbox-service-${sandboxId}`,
+    });
+
+    console.log(`✅ Service ${sandboxId} deleted`);
+
+    return response;
+  } catch (error) {
+    console.error("Delete Service Error:", error.message);
+    throw error;
+  }
+}

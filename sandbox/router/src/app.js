@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import http from "http";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { RefreshTTL } from "./config/redis.js";
 
 const app = express();
 
@@ -85,10 +86,14 @@ app.get("/api/status/readyz", (_, res) => {
 });
 
 // preview.localhost and agent.localhost routing
-app.use((req, res, next) => {
+// preview.localhost and agent.localhost routing
+app.use(async (req, res, next) => {
   const host = req.headers.host || "";
 
-  if (!host.endsWith(".preview.localhost") && !host.endsWith(".agent.localhost")) {
+  if (
+    !host.endsWith(".preview.localhost") &&
+    !host.endsWith(".agent.localhost")
+  ) {
     return next();
   }
 
@@ -96,13 +101,23 @@ app.use((req, res, next) => {
   const sandboxID = parts[0];
   const type = parts[1];
 
+  try {
+    await RefreshTTL(sandboxID);
+    console.log(`✅ TTL refreshed: ${sandboxID}`);
+  } catch (error) {
+    console.error("❌ TTL refresh error:", error.message);
+  }
+
+
   if (type === "preview") {
     return getProxy(sandboxID)(req, res, next);
   }
 
+
   if (type === "agent") {
     return getAgentProxy(sandboxID)(req, res, next);
   }
+
 
   return next();
 });

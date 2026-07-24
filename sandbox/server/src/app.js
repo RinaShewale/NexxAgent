@@ -6,6 +6,8 @@ import { createPod } from "./kubernetes/pod.js";
 import { createService } from "./kubernetes/service.js";
 import { k8sCoreV1Api } from "./kubernetes/config.js";
 
+import { createSandboxKey } from "./config/redis.js";
+
 const app = express();
 
 app.use(express.json());
@@ -77,17 +79,24 @@ app.post("/api/sandbox/start", async (req, res) => {
 
         console.log("Creating Sandbox:", sandboxID);
 
-        await createPod(sandboxID);
-        console.log("✅ Pod created");
 
-        await createService(sandboxID);
-        console.log("✅ Service created");
+        await Promise.all([
+            createPod(sandboxID),
+            createService(sandboxID),
+            createSandboxKey(sandboxID),
+        ]);
+
+
+        console.log("✅ Pod and Service created");
+
 
         await waitForPodReady(
             `sandbox-pod-${sandboxID}`
         );
 
+
         console.log("✅ Pod ready");
+
 
         return res.status(201).json({
             message: "Sandbox created successfully",
@@ -96,9 +105,11 @@ app.post("/api/sandbox/start", async (req, res) => {
             agentUrl: `http://${sandboxID}.agent.localhost`,
         });
 
+
     } catch (error) {
 
         console.error("Sandbox Error:", error);
+
 
         return res.status(500).json({
             message: "Failed to create sandbox",
@@ -108,6 +119,8 @@ app.post("/api/sandbox/start", async (req, res) => {
     }
 
 });
+
+
 
 app.get("/api/sandbox/health", (req, res) => {
 

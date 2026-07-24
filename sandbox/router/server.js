@@ -1,7 +1,7 @@
-import app from "./src/app.js";
+import server from "./src/app.js";
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Router running on port ${PORT}`);
 });
