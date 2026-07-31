@@ -46,11 +46,11 @@ export default function EditorPanel({ openFiles, activeFile, activeFileData, loa
           </div>
           <div className="flex-1 flex overflow-hidden">
             <div className="bg-[#010409] py-4 px-3 text-right text-slate-700 font-mono text-[11px] leading-[1.6] select-none min-w-[3.5rem] border-r border-white/5">
-              {activeFileData.content.split('\n').map((_, i) => <div key={i}>{i + 1}</div>)}
+              {(typeof activeFileData.content === 'string' ? activeFileData.content : String(activeFileData.content || '')).split('\n').map((_, i) => <div key={i}>{i + 1}</div>)}
             </div>
             <textarea
               ref={textareaRef}
-              value={activeFileData.content}
+              value={typeof activeFileData.content === 'string' ? activeFileData.content : String(activeFileData.content || '')}
               onChange={(e) => onContentChange(activeFile, e.target.value)}
               spellCheck={false}
               className="flex-1 bg-transparent text-slate-300 font-mono text-xs leading-[1.6] p-4 outline-none resize-none overflow-auto scrollbar-thin caret-teal-400"

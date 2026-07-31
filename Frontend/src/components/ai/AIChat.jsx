@@ -1,19 +1,42 @@
 // AIChat.js
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useAIStream } from '../../hooks/useAIStream';
-import Spinner from '../shared/Spinner';
+import useSandboxStore from '../../store/sandboxStore';
 
 export default function AIChat({ sandboxID, onFilesChanged }) {
+  const { initialPrompt, setInitialPrompt } = useSandboxStore();
   const { messages, streaming, error, sendMessage, clearChat } = useAIStream(sandboxID);
   const bottomRef = useRef(null);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  const hasTriggeredInitial = useRef(false);
+  // Track previous streaming state so we can detect the transition true→false
+  const wasStreamingRef = useRef(false);
 
   useEffect(() => {
-    if (!streaming && messages.length > 0 && messages[messages.length - 1]?.role === 'ai') onFilesChanged?.();
-  }, [streaming]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Only call onFilesChanged once when a streaming session *completes* (not on every token).
+  useEffect(() => {
+    if (wasStreamingRef.current && !streaming) {
+      // Streaming just finished — refresh the file tree once.
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg?.role === 'ai') {
+        onFilesChanged?.();
+      }
+    }
+    wasStreamingRef.current = streaming;
+  }, [streaming]); // intentionally exclude messages & onFilesChanged to avoid re-triggers
+
+  useEffect(() => {
+    if (initialPrompt && !hasTriggeredInitial.current && messages.length === 0 && sandboxID) {
+      hasTriggeredInitial.current = true;
+      const promptToSend = initialPrompt;
+      setInitialPrompt('');
+      sendMessage(promptToSend);
+    }
+  }, [initialPrompt, sandboxID, messages.length, sendMessage, setInitialPrompt]);
 
   return (
     <div className="flex flex-col h-full bg-[#020617]">
@@ -47,3 +70,4 @@ export default function AIChat({ sandboxID, onFilesChanged }) {
     </div>
   );
 }
+

@@ -86,7 +86,6 @@ app.get("/api/status/readyz", (_, res) => {
 });
 
 // preview.localhost and agent.localhost routing
-// preview.localhost and agent.localhost routing
 app.use(async (req, res, next) => {
   const host = req.headers.host || "";
 
@@ -121,6 +120,38 @@ app.use(async (req, res, next) => {
 
   return next();
 });
+
+// -------------------------------
+// Auth Service Proxy
+// Must be registered BEFORE the sandbox catch-all below,
+// otherwise /api/auth/* falls through to sandbox-service instead
+// of reaching auth-deployment.
+// -------------------------------
+app.use(
+  "/api/auth",
+  createProxyMiddleware({
+    target: "http://auth-deployment:3000",
+    changeOrigin: true,
+    logLevel: "debug",
+
+    onProxyReq(proxyReq, req) {
+      console.log("Auth Proxy:", req.method, req.url);
+    },
+
+    onError(err, req, res) {
+      console.error("Auth Proxy Error:", err.message);
+
+      if (res && typeof res.writeHead === "function") {
+        if (!res.headersSent) {
+          res.writeHead(502, { "Content-Type": "text/plain" });
+        }
+        res.end("Auth Proxy Error");
+      } else if (res && typeof res.destroy === "function") {
+        res.destroy();
+      }
+    },
+  })
+);
 
 // Sandbox Agent API Proxy
 app.use(

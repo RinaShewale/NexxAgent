@@ -23,8 +23,8 @@ export function useSandbox() {
       return data;
     } catch (err) {
       console.error('[useSandbox] error:', err);
-      setError(err.message);
-      throw err;
+      setError(err.message || 'Failed to start sandbox');
+      return null;
     }
   };
 

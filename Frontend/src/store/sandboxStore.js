@@ -23,6 +23,9 @@ const useSandboxStore = create((set, get) => ({
   agentUrl: null,
   status: 'idle', // 'idle' | 'loading' | 'ready' | 'error'
   error: null,
+  previewKey: 0,
+  
+  triggerPreviewReload: () => set((state) => ({ previewKey: state.previewKey + 1 })),
   
   // UI views: 'landing' | 'generating' | 'editor'
   viewState: 'landing', 

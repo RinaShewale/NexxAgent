@@ -2,16 +2,18 @@
 import { useState } from 'react';
 import useSandboxStore from '../../store/sandboxStore';
 import { useSandbox } from '../../hooks/useSandbox';
+import ErrorBanner from '../shared/ErrorBanner';
 
 export default function LandingPage() {
   const [prompt, setPrompt] = useState('');
-  const { setInitialPrompt } = useSandboxStore();
+  const { error, initialPrompt, setInitialPrompt, setError } = useSandboxStore();
   const { triggerStartSandbox } = useSandbox();
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!prompt.trim()) return;
+    setError(null);
     setInitialPrompt(prompt);
-    triggerStartSandbox(prompt);
+    await triggerStartSandbox(prompt);
   };
 
   return (
@@ -21,6 +23,12 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
 
       <div className="w-full max-w-2xl z-10 animate-slide-in">
+        {error && (
+          <div className="mb-6">
+            <ErrorBanner message={error} onRetry={handleStart} />
+          </div>
+        )}
+
         <div className="flex flex-col items-center text-center space-y-6 mb-12">
           <div className="w-16 h-16 rounded-3xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-3xl shadow-2xl shadow-teal-500/10">✦</div>
           <h1 className="text-5xl font-bold tracking-tight text-white leading-tight">Build at the speed of <span className="text-teal-400">thought.</span></h1>
@@ -51,3 +59,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

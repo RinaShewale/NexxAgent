@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { useTerminal } from '../../hooks/useTerminal';
@@ -9,9 +9,17 @@ export default function TerminalPanel({ agentUrl }) {
   const terminalRef = useRef(null);
   const fitAddonRef = useRef(null);
 
-  const { connected, sendCommand, clearTerminal } = useTerminal(agentUrl, {
-    onOutput: (text) => terminalRef.current?.write(text),
+  const handleOutput = useCallback((text) => {
+    terminalRef.current?.write(text);
+  }, []);
+
+  const { connected, sendCommand } = useTerminal(agentUrl, {
+    onOutput: handleOutput,
   });
+
+  const clearTerminal = () => {
+    terminalRef.current?.clear();
+  };
 
   useEffect(() => {
     if (!termRef.current) return;
@@ -57,38 +65,46 @@ export default function TerminalPanel({ agentUrl }) {
       sendCommand(data);
     });
 
+    const fitTerminal = () => {
+      try {
+        fitAddon.fit();
+      } catch {}
+    };
+
     const resizeObserver = new ResizeObserver(() => {
-      try { fitAddon.fit(); } catch {}
+      fitTerminal();
     });
     resizeObserver.observe(termRef.current);
 
-    setTimeout(() => {
-      try { fitAddon.fit(); } catch {}
-    }, 50);
+    setTimeout(fitTerminal, 50);
+    setTimeout(fitTerminal, 200);
 
     return () => {
       resizeObserver.disconnect();
       term.dispose();
       terminalRef.current = null;
     };
-  }, [agentUrl]);
+  }, [agentUrl, sendCommand]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between bg-black/40 shrink-0">
-        <span className="text-[10px] font-bold text-slate-500">TERMINAL</span>
+    <div className="flex flex-col h-full bg-[#010409]">
+      <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between bg-black/40 shrink-0 select-none">
+        <span className="text-[10px] font-bold text-slate-500 tracking-wider">TERMINAL</span>
         <div className="flex items-center gap-2">
           <button
             onClick={clearTerminal}
-            className="text-[9px] uppercase text-slate-600 hover:text-slate-300 mr-2 transition-colors"
+            className="text-[9px] uppercase text-slate-500 hover:text-slate-300 mr-2 transition-colors px-2 py-0.5 rounded hover:bg-white/5"
           >
             Clear
           </button>
-          <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-teal-500' : 'bg-red-500 animate-pulse'}`} />
-          <span className="text-[9px] uppercase">{connected ? 'Connected' : 'Offline'}</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-teal-500 shadow-sm shadow-teal-500' : 'bg-red-500 animate-pulse'}`} />
+          <span className="text-[9px] uppercase font-mono text-slate-400">{connected ? 'Connected' : 'Offline'}</span>
         </div>
       </div>
-      <div ref={termRef} className="flex-1 min-h-0" />
+      <div className="flex-1 min-h-0 relative p-2">
+        <div ref={termRef} className="absolute inset-2" />
+      </div>
     </div>
   );
 }
+

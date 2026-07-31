@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import FileExplorer from '../explorer/FileExplorer';
 import EditorPanel from '../editor/EditorPanel';
 import PreviewPanel from '../preview/PreviewPanel';
@@ -24,6 +24,9 @@ export default function AppShell() {
   useEffect(() => {
     if (agentUrl && viewState === 'editor') refreshTree();
   }, [agentUrl, viewState]);
+
+  // Stable callback reference so AIChat effects don't re-fire on every parent render
+  const handleFilesChanged = useCallback(() => refreshTree(), [refreshTree]);
 
   if (viewState === 'landing') return <LandingPage />;
   if (viewState === 'generating') return <GeneratingPage />;
@@ -57,7 +60,7 @@ export default function AppShell() {
       <main className="flex-1 flex overflow-hidden">
         {/* Left: AI Chat */}
         <div className={`${isSidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 border-r border-white/5 bg-[#020617] flex flex-col overflow-hidden shrink-0`}>
-          <AIChat sandboxID={sandboxID} onFilesChanged={refreshTree} />
+          <AIChat sandboxID={sandboxID} onFilesChanged={handleFilesChanged} />
         </div>
 
         {/* Right: Workspace */}

@@ -8,17 +8,20 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "http://localhost",
         changeOrigin: true,
         secure: false,
       },
 
       "/agent-proxy": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
+        target: "http://localhost",
+        changeOrigin: false,
         secure: false,
         ws: true,
-        rewrite: (path) => path.replace(/^\/agent-proxy\/[^/]+/, ""),
+        rewrite: (path) => {
+          const r = path.replace(/^\/agent-proxy\/[^/]+/, "");
+          return r === "" ? "/" : r;
+        },
 
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
@@ -27,32 +30,45 @@ export default defineConfig({
             );
 
             if (match) {
+              proxyReq.setHeader("host", `${match[1]}.agent.localhost`);
               proxyReq.setHeader("Host", `${match[1]}.agent.localhost`);
             }
           });
 
-          proxy.on("proxyReqWs", (proxyReq, req) => {
+          proxy.on("proxyReqWs", (proxyReq, req, socket, options, head) => {
             const match = (req.originalUrl || req.url).match(
               /^\/agent-proxy\/([^/]+)/
             );
 
             if (match) {
+              proxyReq.setHeader("host", `${match[1]}.agent.localhost`);
               proxyReq.setHeader("Host", `${match[1]}.agent.localhost`);
             }
           });
 
           proxy.on("error", (err) => {
-            console.error("Agent Proxy Error:", err.message);
+            if (err.code !== "ECONNABORTED" && err.code !== "ECONNRESET") {
+              console.error("Agent Proxy Error:", err.message);
+            }
+          });
+
+          proxy.on("proxySocketError", (err) => {
+            if (err.code !== "ECONNABORTED" && err.code !== "ECONNRESET") {
+              console.error("Agent Proxy Socket Error:", err.message);
+            }
           });
         },
       },
 
       "/preview-proxy": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
+        target: "http://localhost",
+        changeOrigin: false,
         secure: false,
         ws: true,
-        rewrite: (path) => path.replace(/^\/preview-proxy\/[^/]+/, ""),
+        rewrite: (path) => {
+          const r = path.replace(/^\/preview-proxy\/[^/]+/, "");
+          return r === "" ? "/" : r;
+        },
 
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
@@ -61,22 +77,32 @@ export default defineConfig({
             );
 
             if (match) {
+              proxyReq.setHeader("host", `${match[1]}.preview.localhost`);
               proxyReq.setHeader("Host", `${match[1]}.preview.localhost`);
             }
           });
 
-          proxy.on("proxyReqWs", (proxyReq, req) => {
+          proxy.on("proxyReqWs", (proxyReq, req, socket, options, head) => {
             const match = (req.originalUrl || req.url).match(
               /^\/preview-proxy\/([^/]+)/
             );
 
             if (match) {
+              proxyReq.setHeader("host", `${match[1]}.preview.localhost`);
               proxyReq.setHeader("Host", `${match[1]}.preview.localhost`);
             }
           });
 
           proxy.on("error", (err) => {
-            console.error("Preview Proxy Error:", err.message);
+            if (err.code !== "ECONNABORTED" && err.code !== "ECONNRESET") {
+              console.error("Preview Proxy Error:", err.message);
+            }
+          });
+
+          proxy.on("proxySocketError", (err) => {
+            if (err.code !== "ECONNABORTED" && err.code !== "ECONNRESET") {
+              console.error("Preview Proxy Socket Error:", err.message);
+            }
           });
         },
       },
