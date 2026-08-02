@@ -4,7 +4,8 @@ import passport from "passport";
 import {
   googleCallback,
   logout,
-  authFailed
+  authFailed,
+  getCurrentUser
 } from "../controllers/auth.controller.js";
 
 
@@ -30,10 +31,18 @@ router.get(
   "/google/callback",
 
   passport.authenticate("google",{
-    failureRedirect:"/auth/fail"
+    failureRedirect:"/api/auth/fail"
   }),
 
   googleCallback
+);
+
+
+
+// Get Current User Profile
+router.get(
+  "/me",
+  getCurrentUser
 );
 
 

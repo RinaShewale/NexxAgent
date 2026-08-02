@@ -23,7 +23,10 @@ export default function GeneratingPage() {
         
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-white">Assembling your workspace...</h2>
-          <p className="text-slate-500 text-sm">Spinning up containers, installing dependencies, and configuring AI agents.</p>
+          <p className="text-slate-500 text-sm">
+            Spinning up containers, installing dependencies, and configuring AI agents.
+            If this is a cold start, the backend may still be warming up.
+          </p>
         </div>
 
         <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">

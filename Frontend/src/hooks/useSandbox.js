@@ -13,8 +13,13 @@ export function useSandbox() {
   const triggerStartSandbox = async (prompt) => {
     setStatus('loading');
     setViewState('generating');
+
     try {
-      const data = await startSandbox();
+      const data = await startSandbox(prompt);
+      if (!data || !data.sandboxID) {
+        throw new Error('Sandbox service did not return a valid sandbox session.');
+      }
+
       setSandbox({
         sandboxID: data.sandboxID,
         previewUrl: data.previewUrl,
@@ -23,7 +28,10 @@ export function useSandbox() {
       return data;
     } catch (err) {
       console.error('[useSandbox] error:', err);
-      setError(err.message || 'Failed to start sandbox');
+      const message = err?.message || 'Failed to start sandbox';
+      setError(message);
+      setStatus('error');
+      setViewState('landing');
       return null;
     }
   };

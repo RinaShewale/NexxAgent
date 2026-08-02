@@ -6,15 +6,19 @@ import TerminalPanel from '../terminal/TerminalPanel';
 import AIChat from '../ai/AIChat';
 import LandingPage from './LandingPage';
 import GeneratingPage from './GeneratingPage';
+import LoginPage from '../auth/LoginPage';
 import useSandboxStore from '../../store/sandboxStore';
 import { useFileEditor } from '../../hooks/useFileEditor';
 import { useFileTree } from '../../hooks/useFileTree';
+import useAuth from '../../hooks/useAuth';
 
 export default function AppShell() {
   const { sandboxID, previewUrl, agentUrl, viewState, initialPrompt, reset } = useSandboxStore();
   const { refresh: refreshTree } = useFileTree(agentUrl);
   const { openFiles, activeFile, activeFileData, loading, saveStatus, openFile, closeFile, updateContent, saveFile, setActiveFile } = useFileEditor(agentUrl);
+  const { user, isAuthenticated, logout } = useAuth();
 
+  const [showLogin, setShowLogin] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState('preview');
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [bottomHeight, setBottomHeight] = useState(200);
@@ -28,6 +32,7 @@ export default function AppShell() {
   // Stable callback reference so AIChat effects don't re-fire on every parent render
   const handleFilesChanged = useCallback(() => refreshTree(), [refreshTree]);
 
+  if (showLogin) return <LoginPage onCancel={() => setShowLogin(false)} />;
   if (viewState === 'landing') return <LandingPage />;
   if (viewState === 'generating') return <GeneratingPage />;
 
@@ -53,7 +58,28 @@ export default function AppShell() {
           <button className="px-4 py-1.5 text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 rounded-full transition-all shadow-lg shadow-teal-500/20">
             Deploy
           </button>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 border border-white/10" />
+
+          {/* User Auth Info Header */}
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1 pr-3 rounded-full">
+              <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full border border-teal-400 object-cover" />
+              <span className="text-xs font-semibold text-slate-200 hidden sm:inline">{user.name}</span>
+              <button
+                onClick={logout}
+                title="Logout"
+                className="text-xs text-slate-400 hover:text-red-400 ml-1 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all"
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </header>
 

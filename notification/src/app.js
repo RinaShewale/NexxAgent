@@ -142,16 +142,16 @@ If this was not you, please secure your account immediately.
 
 
 
-      await sendEmail(
-        email,
+      await sendEmail({
+        to: email,
         subject,
         text,
-        html
-      );
+        html,
+      });
 
 
       console.log(
-        "Notification email sent to:",
+        "Notification email processed for:",
         email
       );
 
@@ -166,8 +166,7 @@ If this was not you, please secure your account immediately.
         error
       );
 
-      // retry message
-      channel.nack(msg, false, true);
+      channel.ack(msg);
 
     }
 

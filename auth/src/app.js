@@ -18,12 +18,27 @@ const app = express();
 // CORS
 // =======================
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost",
+  "http://127.0.0.1:5173"
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost",
+    origin: (origin, callback) => {
+      // allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Permissive origin check for local dev
+    },
     credentials: true
   })
 );
+
 
 
 
@@ -107,13 +122,13 @@ app.use(
 // Health Check
 // =======================
 
-app.get("/", (req,res)=>{
+app.get("/", (req, res) => {
 
   res.status(200).json({
 
-    message:"Auth Server Running 🚀",
+    message: "Auth Server Running 🚀",
 
-    user:req.user || null
+    user: req.user || null
 
   });
 

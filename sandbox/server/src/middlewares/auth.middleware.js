@@ -2,7 +2,7 @@ import { verifyToken } from "../utils/jwt.js";
 
 export function authMiddleware(req, res, next) {
   try {
-    const token = req.cookies?.token;
+    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
@@ -18,7 +18,13 @@ export function authMiddleware(req, res, next) {
       });
     }
 
-    req.user = decoded;
+    const userId = decoded.userId || decoded.id || decoded._id;
+
+    req.user = {
+      ...decoded,
+      userId,
+      id: userId,
+    };
 
     next();
 

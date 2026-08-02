@@ -42,7 +42,8 @@ async function waitForPodReady(podName) {
         } catch (error) {
             // 404 means the pod isn't scheduled/visible yet — keep waiting.
             // Anything else (auth, RBAC, network) is a real failure — fail fast.
-            if (error?.code !== 404 && error?.statusCode !== 404) {
+            const statusCode = error?.code || error?.statusCode || error?.response?.statusCode;
+            if (statusCode !== 404) {
                 throw new Error(`Pod readiness check failed: ${error.message}`);
             }
             console.log("Pod not found yet, retrying:", podName);
@@ -76,7 +77,7 @@ async function cleanupSandbox(sandboxID) {
 // Create Project
 export async function createProject(req, res) {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.userId || req.user.id || req.user._id;
         const { title } = req.body;
 
         if (!title || typeof title !== "string" || !title.trim()) {
@@ -109,7 +110,7 @@ export async function createProject(req, res) {
 // Get Projects
 export async function getProjects(req, res) {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.userId || req.user.id || req.user._id;
 
         const projects = await Project.find({ user: userId })
             .sort({ createdAt: -1 });
@@ -130,51 +131,60 @@ export async function getProjects(req, res) {
 
 // Create Sandbox
 export async function createSandbox(req, res) {
-    const { projectId } = req.body;
-    const userId = req.user.userId;
+    const { projectId, prompt } = req.body || {};
+    const userId = req.user.userId || req.user.id || req.user._id;
     let sandboxID = null;
 
-    try {
-        if (!projectId || !isValidObjectId(projectId)) {
-            return res.status(400).json({
-                success: false,
-                message: "A valid projectId is required",
-            });
-        }
-
-        const project = await Project.findOne({
-            _id: projectId,
-            user: userId,
+    if (!req.body || (typeof req.body !== 'object')) {
+        return res.status(400).json({
+            success: false,
+            message: 'Request body is required and must be JSON.',
         });
+    }
 
-        if (!project) {
-            return res.status(404).json({
-                success: false,
-                message: "Project not found",
+    try {
+        let project = null;
+
+        if (projectId) {
+            if (!isValidObjectId(projectId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "A valid projectId is required",
+                });
+            }
+
+            project = await Project.findOne({
+                _id: projectId,
+                user: userId,
+            });
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Project not found",
+                });
+            }
+        } else {
+            const title = prompt && typeof prompt === 'string' && prompt.trim()
+                ? prompt.trim().slice(0, 120)
+                : 'New Sandbox Project';
+
+            project = await Project.create({
+                user: userId,
+                title,
             });
         }
 
         sandboxID = uuid();
+        const podName = `sandbox-pod-${sandboxID}`;
         console.log("Creating sandbox:", sandboxID);
 
-        // NOTE: assumes createPod resolves with the actual pod name it created,
-        // so this doesn't have to guess/duplicate the naming convention.
-        // If createPod doesn't return it yet, add `return podName;` in pod.js.
-        //
-        // IMPORTANT: createSandboxKey is intentionally NOT started here anymore.
-        // It sets a 2-minute Redis TTL that, via the keyspace-notification
-        // listener in config/redis.js, causes the pod/service to be deleted
-        // when it expires. waitForPodReady can take up to 180s (60 retries *
-        // 3s), which is longer than that 120s TTL — so starting the timer
-        // before the pod is ready could delete a sandbox that's still being
-        // provisioned (or that only just became ready). The key is created
-        // only after we know the pod is actually up.
-        const [podName] = await Promise.all([
-            createPod(sandboxID, project._id),
+        await Promise.all([
+            createPod(sandboxID),
             createService(sandboxID),
         ]);
 
-        await waitForPodReady(podName || `sandbox-pod-${sandboxID}`);
+        await waitForPodReady(podName);
 
         // Start the session TTL only now that the sandbox is confirmed ready.
         await createSandboxKey(sandboxID);

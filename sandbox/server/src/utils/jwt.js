@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
 
+const JWT_SECRET = process.env.JWT_SECRET || "nexxagent-google-auth-secret";
+
 export function generateToken(payload) {
   try {
     return jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       {
         expiresIn: "7d",
       }
@@ -20,7 +22,7 @@ export function verifyToken(token) {
   try {
     return jwt.verify(
       token,
-      process.env.JWT_SECRET
+      JWT_SECRET
     );
   } catch (err) {
     console.error("Token verification failed:", err.message);
