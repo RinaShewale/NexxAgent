@@ -1,19 +1,43 @@
+import { motion } from 'framer-motion';
+
 const variants = {
-  green: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  red: 'bg-red-500/15 text-red-400 border-red-500/30',
-  yellow: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  blue: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  violet: 'bg-violet-500/15 text-violet-400 border-violet-500/30',
-  gray: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
+  // Desaturated Jade
+  green: 'bg-[#10b98110] text-[#10b981] border-[#10b98130]',
+  // Muted Rose
+  red: 'bg-[#f43f5e10] text-[#f43f5e] border-[#f43f5e30]',
+  // Soft Amber
+  yellow: 'bg-[#f59e0b10] text-[#f59e0b] border-[#f59e0b30]',
+  // Indigo Blue
+  blue: 'bg-[#3b82f610] text-[#3b82f6] border-[#3b82f630]',
+  // Royal Violet
+  violet: 'bg-[#8b5cf610] text-[#8b5cf6] border-[#8b5cf630]',
+  // Premium Neutral (Studio Theme)
+  gray: 'bg-[#161618] text-[#818263] border-[#282728]',
 };
 
 export default function Badge({ label, variant = 'gray', dot = false }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border ${variants[variant]}`}>
+    <span 
+      className={`
+        inline-flex items-center gap-1.5 px-2 py-0.5 
+        text-[9px] font-bold uppercase tracking-[0.15em] 
+        rounded-md border transition-all duration-300
+        ${variants[variant]}
+      `}
+    >
       {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full bg-current animate-pulse`} />
+        <span className="relative flex h-1.5 w-1.5">
+          <motion.span 
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className={`
+              relative inline-flex rounded-full h-1.5 w-1.5 bg-current
+              ${variant !== 'gray' ? 'shadow-[0_0_8px_currentColor]' : ''}
+            `}
+          />
+        </span>
       )}
-      {label}
+      <span className="leading-none pt-[1px]">{label}</span>
     </span>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { motion } from 'framer-motion';
 import { useTerminal } from '../../hooks/useTerminal';
 import 'xterm/css/xterm.css';
 
@@ -23,33 +24,46 @@ export default function TerminalPanel({ agentUrl }) {
 
   useEffect(() => {
     if (!termRef.current) return;
+    if (!connected) {
+      try {
+        if (terminalRef.current) {
+          terminalRef.current.dispose();
+          terminalRef.current = null;
+        }
+      } catch {}
+      return;
+    }
 
+    if (terminalRef.current) return;
+
+    // Terminal Configuration aligned with the Studio Palette
     const term = new Terminal({
       cursorBlink: true,
       cursorStyle: 'underline',
-      fontSize: 13,
+      fontSize: 12,
+      lineHeight: 1.4,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace",
       theme: {
-        background: '#010409',
-        foreground: '#e2e8f0',
-        cursor: '#2dd4bf',
-        selectionBackground: '#2dd4bf33',
-        black: '#484f58',
-        red: '#ff7b72',
-        green: '#3fb950',
-        yellow: '#d29922',
-        blue: '#58a6ff',
-        magenta: '#bc8cff',
-        cyan: '#39c5cf',
-        white: '#b1bac4',
-        brightBlack: '#6e7681',
-        brightRed: '#ffa198',
-        brightGreen: '#56d364',
-        brightYellow: '#e3b341',
-        brightBlue: '#79c0ff',
-        brightMagenta: '#d2a8ff',
-        brightCyan: '#56d4dd',
-        brightWhite: '#f0f6fc',
+        background: '#0D0E10', // Night
+        foreground: '#C5C6C8', // Silver
+        cursor: '#F8FAFA',     // Seasalt
+        selectionBackground: 'rgba(248, 250, 250, 0.1)',
+        black: '#282728',      // Raisin Black
+        red: '#f43f5e',
+        green: '#10b981',
+        yellow: '#f59e0b',
+        blue: '#3b82f6',
+        magenta: '#8b5cf6',
+        cyan: '#06b6d4',
+        white: '#F8FAFA',      // Seasalt
+        brightBlack: '#4F5052', // Davy's Gray
+        brightRed: '#fb7185',
+        brightGreen: '#34d399',
+        brightYellow: '#fbbf24',
+        brightBlue: '#60a5fa',
+        brightMagenta: '#a78bfa',
+        brightCyan: '#22d3ee',
+        brightWhite: '#F8FAFA',
       },
       allowProposedApi: true,
     });
@@ -62,16 +76,24 @@ export default function TerminalPanel({ agentUrl }) {
     terminalRef.current = term;
 
     term.onData((data) => {
-      sendCommand(data);
+      if (connected) sendCommand(data);
     });
 
     const fitTerminal = () => {
       try {
-        fitAddon.fit();
-      } catch {}
+        if (!terminalRef.current || !fitAddonRef.current) return;
+        const el = termRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        if (!rect || rect.width === 0 || rect.height === 0) return;
+        fitAddonRef.current.fit();
+      } catch (err) {
+        console.warn('Terminal fit failed', err);
+      }
     };
 
     const resizeObserver = new ResizeObserver(() => {
+      if (!termRef.current) return;
       fitTerminal();
     });
     resizeObserver.observe(termRef.current);
@@ -81,30 +103,75 @@ export default function TerminalPanel({ agentUrl }) {
 
     return () => {
       resizeObserver.disconnect();
-      term.dispose();
+      try {
+        term.dispose();
+      } catch {}
       terminalRef.current = null;
     };
-  }, [agentUrl, sendCommand]);
+  }, [agentUrl, sendCommand, connected]);
 
   return (
-    <div className="flex flex-col h-full bg-[#010409]">
-      <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between bg-black/40 shrink-0 select-none">
-        <span className="text-[10px] font-bold text-slate-500 tracking-wider">TERMINAL</span>
+    <div className="flex flex-col h-full bg-[#0D0E10] overflow-hidden selection:bg-[#F8FAFA]/10">
+      {/* Utility Header Bar */}
+      <div className="h-9 px-4 border-b border-[#282728] flex items-center justify-between bg-[#161618]/30 shrink-0 select-none">
+        <div className="flex items-center gap-4">
+          <span className="text-[9px] font-bold text-[#818263] uppercase tracking-[0.25em]">
+            Terminal
+          </span>
+          
+          <div className="flex items-center gap-2 border-l border-[#282728] pl-4">
+            <motion.div 
+              animate={!connected ? { opacity: [0.3, 1, 0.3] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+              className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                connected ? 'bg-[#F8FAFA] shadow-[0_0_8px_#F8FAFA]' : 'bg-[#4F5052]'
+              }`} 
+            />
+            <span className="text-[9px] font-mono font-bold text-[#4F5052] uppercase tracking-tighter">
+              {connected ? 'Status: Active' : 'Status: Offline'}
+            </span>
+          </div>
+        </div>
+
         <div className="flex items-center gap-2">
           <button
             onClick={clearTerminal}
-            className="text-[9px] uppercase text-slate-500 hover:text-slate-300 mr-2 transition-colors px-2 py-0.5 rounded hover:bg-white/5"
+            className="text-[9px] font-bold uppercase text-[#4F5052] hover:text-[#C5C6C8] transition-all px-2 py-1 rounded hover:bg-[#282728]"
           >
-            Clear
+            Clear Shell
           </button>
-          <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-teal-500 shadow-sm shadow-teal-500' : 'bg-red-500 animate-pulse'}`} />
-          <span className="text-[9px] uppercase font-mono text-slate-400">{connected ? 'Connected' : 'Offline'}</span>
         </div>
       </div>
-      <div className="flex-1 min-h-0 relative p-2">
-        <div ref={termRef} className="absolute inset-2" />
-      </div>
+
+      {/* Terminal Viewport */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex-1 min-h-0 relative p-3"
+      >
+        <div ref={termRef} className="absolute inset-3" />
+      </motion.div>
+
+      {/* Modern Inner Glow Overlay (Decorative) */}
+      <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-[#0D0E10] to-transparent pointer-events-none opacity-50" />
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* Override xterm standard scrollbar to match our palette */
+        .xterm-viewport::-webkit-scrollbar {
+          width: 6px;
+        }
+        .xterm-viewport::-webkit-scrollbar-track {
+          background: #0D0E10;
+        }
+        .xterm-viewport::-webkit-scrollbar-thumb {
+          background: #282728;
+          border-radius: 10px;
+        }
+        .xterm-viewport::-webkit-scrollbar-thumb:hover {
+          background: #4F5052;
+        }
+      `}} />
     </div>
   );
 }
-

@@ -29,7 +29,6 @@ export default function AppShell() {
     if (agentUrl && viewState === 'editor') refreshTree();
   }, [agentUrl, viewState]);
 
-  // Stable callback reference so AIChat effects don't re-fire on every parent render
   const handleFilesChanged = useCallback(() => refreshTree(), [refreshTree]);
 
   if (showLogin) return <LoginPage onCancel={() => setShowLogin(false)} />;
@@ -37,45 +36,58 @@ export default function AppShell() {
   if (viewState === 'generating') return <GeneratingPage />;
 
   return (
-    <div className="h-screen w-screen bg-[#020617] flex flex-col overflow-hidden text-slate-200">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 h-14 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md z-30">
+    <div className="h-screen w-screen bg-[#0D0E10] flex flex-col overflow-hidden text-[#F8FAFA] selection:bg-[#2dd4bf33]">
+      {/* Premium Header */}
+      <header className="flex items-center justify-between px-4 h-12 border-b border-[#282728] bg-[#0D0E10]/90 backdrop-blur-xl z-40">
         <div className="flex items-center gap-4">
-          <button onClick={reset} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          <button 
+            onClick={reset} 
+            className="p-1.5 hover:bg-[#282728] rounded-md transition-all duration-200 text-[#818263] hover:text-[#F8FAFA]"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-teal-500/20 flex items-center justify-center text-teal-400 font-bold">✦</div>
-            <span className="font-semibold text-sm hidden sm:block">NexxAgent <span className="text-teal-500">Studio</span></span>
+          
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded bg-[#F8FAFA] flex items-center justify-center">
+              <div className="w-3 h-3 bg-[#0D0E10] rounded-[1px] rotate-45" />
+            </div>
+            <span className="font-medium text-[13px] tracking-tight">
+              NexxAgent <span className="text-[#818263] font-normal mx-1">/</span> <span className="text-[#F8FAFA]">Studio</span>
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex bg-white/5 rounded-full px-3 py-1 text-[11px] text-slate-500 border border-white/5 items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-            Live Sync: Connected
+        <div className="flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full border border-[#282728] bg-[#161618] text-[10px] font-medium text-[#818263]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2dd4bf] shadow-[0_0_8px_#2dd4bf]" />
+            Live Sync
           </div>
-          <button className="px-4 py-1.5 text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 rounded-full transition-all shadow-lg shadow-teal-500/20">
+          
+          <button className="px-3 py-1.5 text-[11px] font-semibold text-[#0D0E10] bg-[#F8FAFA] hover:bg-[#C5C6C8] rounded-md transition-all active:scale-95 shadow-sm">
             Deploy
           </button>
 
-          {/* User Auth Info Header */}
+          {/* User Auth Info */}
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1 pr-3 rounded-full">
-              <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full border border-teal-400 object-cover" />
-              <span className="text-xs font-semibold text-slate-200 hidden sm:inline">{user.name}</span>
+            <div className="flex items-center gap-2 pl-3 border-l border-[#282728]">
+              <img 
+                src={user.avatar} 
+                alt={user.name} 
+                className="w-6 h-6 rounded-full border border-[#282728] object-cover grayscale hover:grayscale-0 transition-all cursor-pointer" 
+              />
               <button
                 onClick={logout}
-                title="Logout"
-                className="text-xs text-slate-400 hover:text-red-400 ml-1 transition-colors"
+                className="text-[10px] text-[#818263] hover:text-[#F8FAFA] transition-colors"
               >
-                ✕
+                Sign out
               </button>
             </div>
           ) : (
             <button
               onClick={() => setShowLogin(true)}
-              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all"
+              className="text-[11px] font-medium px-3 py-1.5 rounded-md hover:bg-[#282728] text-[#F8FAFA] transition-all border border-transparent hover:border-[#4F5052]"
             >
               Sign In
             </button>
@@ -84,51 +96,90 @@ export default function AppShell() {
       </header>
 
       <main className="flex-1 flex overflow-hidden">
-        {/* Left: AI Chat */}
-        <div className={`${isSidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 border-r border-white/5 bg-[#020617] flex flex-col overflow-hidden shrink-0`}>
+        {/* Left: AI Chat - Styled with a softer secondary background */}
+        <div 
+          className={`${isSidebarOpen ? 'w-[360px]' : 'w-0'} transition-all duration-300 ease-in-out border-r border-[#282728] bg-[#0D0E10] flex flex-col overflow-hidden shrink-0`}
+        >
           <AIChat sandboxID={sandboxID} onFilesChanged={handleFilesChanged} />
         </div>
 
         {/* Right: Workspace */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between px-4 h-12 border-b border-white/5 bg-[#030712]">
-            <div className="flex gap-1 bg-slate-900/50 p-1 rounded-xl border border-white/5">
+        <div className="flex-1 flex flex-col min-w-0 bg-[#0D0E10]">
+          {/* Internal Workspace Header */}
+          <div className="flex items-center justify-between px-4 h-10 border-b border-[#282728] bg-[#0D0E10]">
+            <div className="flex p-[3px] bg-[#161618] rounded-lg border border-[#282728]">
               {['preview', 'code'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveRightTab(tab)}
-                  className={`px-4 py-1 rounded-lg text-xs font-medium capitalize transition-all ${activeRightTab === tab ? 'bg-teal-500/10 text-teal-400 shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`px-3 py-1 rounded-[5px] text-[11px] font-medium capitalize transition-all duration-200 ${
+                    activeRightTab === tab 
+                      ? 'bg-[#282728] text-[#F8FAFA] shadow-sm' 
+                      : 'text-[#818263] hover:text-[#C5C6C8]'
+                  }`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
-            <button 
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-1.5 text-slate-500 hover:text-white transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
+            
+            <div className="flex items-center gap-1">
+               <button 
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className={`p-1.5 rounded-md transition-colors ${!isSidebarOpen ? 'bg-[#F8FAFA] text-[#0D0E10]' : 'text-[#818263] hover:text-[#F8FAFA]'}`}
+                title="Toggle Sidebar"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex overflow-hidden relative">
             {activeRightTab === 'preview' ? (
-              <PreviewPanel previewUrl={previewUrl} />
+              <div className="flex-1 bg-[#161618] animate-in fade-in duration-500">
+                <PreviewPanel previewUrl={previewUrl} />
+              </div>
             ) : (
               <div className="flex-1 flex overflow-hidden">
-                <div style={{ width: sidebarWidth }} className="border-r border-white/5 shrink-0">
+                {/* File Explorer Panel */}
+                <div 
+                  style={{ width: sidebarWidth }} 
+                  className="border-r border-[#282728] shrink-0 bg-[#0D0E10]"
+                >
                   <FileExplorer agentUrl={agentUrl} onFileClick={openFile} />
                 </div>
+
+                {/* Editor & Terminal Section */}
                 <div className="flex-1 flex flex-col min-w-0">
-                  <div className="flex-1">
+                  <div className="flex-1 overflow-hidden">
                     <EditorPanel
-                      openFiles={openFiles} activeFile={activeFile} activeFileData={activeFileData}
-                      loading={loading} saveStatus={saveStatus} onSelect={setActiveFile}
-                      onClose={closeFile} onSave={saveFile} onContentChange={updateContent}
+                      openFiles={openFiles} 
+                      activeFile={activeFile} 
+                      activeFileData={activeFileData}
+                      loading={loading} 
+                      saveStatus={saveStatus} 
+                      onSelect={setActiveFile}
+                      onClose={closeFile} 
+                      onSave={saveFile} 
+                      onContentChange={updateContent}
                     />
                   </div>
-                  <div className="h-1 bg-white/5 hover:bg-teal-500/40 cursor-row-resize transition-all" onMouseDown={() => isDraggingRef.current = 'bottom'} />
-                  <div style={{ height: bottomHeight }} className="bg-[#010409]">
+
+                  {/* Horizontal Resize Handle */}
+                  <div 
+                    className="h-[1px] bg-[#282728] hover:bg-[#2dd4bf] cursor-row-resize transition-colors relative group"
+                    onMouseDown={() => isDraggingRef.current = 'bottom'}
+                  >
+                    <div className="absolute inset-x-0 -top-1 -bottom-1 z-10" />
+                  </div>
+
+                  {/* Terminal Panel */}
+                  <div 
+                    style={{ height: bottomHeight }} 
+                    className="bg-[#0D0E10] border-t border-[#282728]"
+                  >
                     <TerminalPanel agentUrl={agentUrl} />
                   </div>
                 </div>
@@ -145,12 +196,29 @@ export default function AppShell() {
           onMouseMove={(e) => {
             if (isDraggingRef.current === 'bottom') {
               const h = window.innerHeight - e.clientY;
-              setBottomHeight(Math.max(100, Math.min(h, 500)));
+              // Constraints: min 80px, max 60% of height
+              setBottomHeight(Math.max(80, Math.min(h, window.innerHeight * 0.6)));
             }
           }}
           onMouseUp={() => isDraggingRef.current = null}
         />
       )}
+
+      {/* Global Style Inject for the specific palette */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --color-seasalt: #F8FAFA;
+          --color-silver: #C5C6C8;
+          --color-gray: #818263;
+          --color-davys: #4F5052;
+          --color-raisin: #282728;
+          --color-night: #0D0E10;
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #282728; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4F5052; }
+      `}} />
     </div>
   );
 }
