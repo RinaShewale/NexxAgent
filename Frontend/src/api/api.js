@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Base API URL for Auth/Sandbox router.
 // Use same-origin proxy by default, or override with VITE_AUTH_API_URL.
-const API_BASE_URL = 'http://localhost';
+const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || '';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

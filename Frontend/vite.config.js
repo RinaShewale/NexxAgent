@@ -14,9 +14,8 @@ export default defineConfig({
       },
 
       "/agent-proxy": {
-        target: "http://localhost:3000",
-        // ensure origin is rewritten for websocket proxying
-        changeOrigin: true,
+        target: "http://127.0.0.1:3000",
+        changeOrigin: false,
         secure: false,
         ws: true,
         rewrite: (path) => {
@@ -62,9 +61,8 @@ export default defineConfig({
       },
 
       "/preview-proxy": {
-        target: "http://localhost:3000",
-        // ensure origin is rewritten for websocket proxying
-        changeOrigin: true,
+        target: "http://127.0.0.1:3000",
+        changeOrigin: false,
         secure: false,
         ws: true,
         rewrite: (path) => {

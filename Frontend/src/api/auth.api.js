@@ -1,13 +1,17 @@
 import api from './api';
 
-const AUTH_BASE_URL = 'http://localhost';
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_API_URL || '';
+const getAuthBaseUrl = () => {
+  if (AUTH_BASE_URL) return AUTH_BASE_URL.replace(/\/$/, '');
+  return typeof window !== 'undefined' ? window.location.origin : '';
+};
 
 export const authApi = {
   /**
    * Returns the Google OAuth authorization URL
    */
   getGoogleAuthUrl: () => {
-    return `${AUTH_BASE_URL}/api/auth/google`;
+    return `${getAuthBaseUrl()}/api/auth/google`;
   },
 
   /**
