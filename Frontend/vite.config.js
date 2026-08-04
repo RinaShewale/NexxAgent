@@ -8,13 +8,13 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "http://localhost:80",
         changeOrigin: true,
         secure: false,
       },
 
       "/agent-proxy": {
-        target: "http://127.0.0.1:3000",
+        target: "http://127.0.0.1:80",
         changeOrigin: false,
         secure: false,
         ws: true,
@@ -61,7 +61,7 @@ export default defineConfig({
       },
 
       "/preview-proxy": {
-        target: "http://127.0.0.1:3000",
+        target: "http://127.0.0.1:80",
         changeOrigin: false,
         secure: false,
         ws: true,
