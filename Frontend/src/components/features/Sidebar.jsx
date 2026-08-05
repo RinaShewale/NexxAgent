@@ -1,83 +1,74 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Monitor, History, Plus, Layout, Grid, Settings, Sparkles, LogOut, LogIn } from 'lucide-react';
+import { Monitor, History, Plus, Layout, Grid, Settings, Sparkles, LogIn, LogOut, ChevronRight } from 'lucide-react';
 
-export default function Sidebar({ 
-  activeTab, setActiveTab, onSettings, isAuthenticated, user, onLogin, onLogout 
-}) {
-  const menuItems = [
-    { section: 'Explore', items: [{ id: 'Playground', icon: <Monitor size={18}/> }, { id: 'History', icon: <History size={18}/> }] },
-    { section: 'Build', items: [{ id: 'New app', icon: <Plus size={18}/> }, { id: 'My apps', icon: <Layout size={18}/> }, { id: 'Gallery', icon: <Grid size={18}/> }] }
+export default function Sidebar({ activeTab, setActiveTab, onSettings, onLogin, onLogout, isAuthenticated, user }) {
+  const menu = [
+    { label: 'Explore', items: [{ id: 'Playground', icon: Monitor }, { id: 'History', icon: History }] },
+    { label: 'Build', items: [{ id: 'New app', icon: Plus }, { id: 'My apps', icon: Layout }, { id: 'Gallery', icon: Grid }] }
   ];
 
   return (
-    /* Sidebar BG: #000000 | Border: #262626 */
-    <motion.aside className="hidden lg:flex flex-col w-64 border-r border-[#262626] bg-[#000000] p-4 z-30">
-      <div className="flex items-center gap-3 mb-10 px-2">
-        {/* Logo Box: #424242 */}
-        <div className="w-8 h-8 bg-[#424242] rounded-lg flex items-center justify-center shadow-lg">
-          <Sparkles className="text-white" size={18} />
+    <aside className="flex flex-col h-full bg-[#050505] border-r border-[#1a1a1a]">
+      <div className="p-8">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-white/10 shadow-xl">
+            <Sparkles className="text-black" size={18} />
+          </div>
+          <span className="font-bold text-xl tracking-tighter text-white">Nexx</span>
         </div>
-        <span className="font-bold tracking-tighter text-xl text-white">NexxAgent</span>
       </div>
 
-      <nav className="flex-1 space-y-6">
-        {menuItems.map((sec) => (
-          <div key={sec.section}>
-            {/* Section Header: #595959 */}
-            <p className="text-[10px] font-bold text-[#595959] uppercase tracking-[0.2em] px-3 mb-2">{sec.section}</p>
-            {sec.items.map((item) => (
-              <SidebarItem 
-                key={item.id}
-                icon={item.icon} 
-                label={item.id} 
-                active={activeTab === item.id} 
-                onClick={() => setActiveTab(item.id)}
-              />
-            ))}
+      <nav className="flex-1 px-4 space-y-8">
+        {menu.map((group) => (
+          <div key={group.label}>
+            <p className="text-[10px] font-bold text-[#424242] uppercase tracking-[0.2em] px-4 mb-3">{group.label}</p>
+            <div className="space-y-1">
+              {group.items.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                    activeTab === item.id ? 'bg-[#1a1a1a] text-white' : 'text-[#777777] hover:text-white hover:bg-[#1a1a1a]/40'
+                  }`}
+                >
+                  <item.icon size={18} />
+                  <span className="text-sm font-medium">{item.id}</span>
+                  {activeTab === item.id && <ChevronRight size={14} className="ml-auto opacity-40" />}
+                </button>
+              ))}
+            </div>
           </div>
         ))}
       </nav>
 
-      {/* FOOTER AREA - Border: #262626 */}
-      <div className="mt-auto space-y-2 border-t border-[#262626] pt-4">
-        <SidebarItem icon={<Settings size={18}/>} label="Settings" onClick={onSettings} />
-        
+      <div className="p-4 border-t border-[#1a1a1a] space-y-4">
+        <button onClick={onSettings} className="w-full flex items-center gap-3 px-4 py-2 text-[#777777] hover:text-white transition-colors">
+          <Settings size={18} />
+          <span className="text-sm font-medium">Settings</span>
+        </button>
+
         {isAuthenticated ? (
-          /* User Profile Section - Border: #262626 | Avatar Border: #595959 */
-          <div className="flex items-center gap-3 p-2 mt-2 rounded-2xl bg-[#262626]/30 border border-[#262626]">
-            <img src={user?.avatar} className="w-8 h-8 rounded-full border border-[#595959]" alt="avatar" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate text-white">{user?.name}</p>
-              <button onClick={onLogout} className="text-[10px] text-[#777777] hover:text-white transition-colors block">Sign Out</button>
+          <div className="flex items-center justify-between p-3 bg-[#111] rounded-2xl border border-[#1a1a1a]">
+            <div className="flex items-center gap-3 min-w-0">
+              <img src={user?.avatar || 'https://via.placeholder.com/40'} className="w-8 h-8 rounded-full bg-[#222]" alt="user" />
+              <div className="truncate">
+                <p className="text-xs font-bold text-white truncate">{user?.name || 'User'}</p>
+                <p className="text-[10px] text-[#424242] truncate">Pro Plan</p>
+              </div>
             </div>
-            <LogOut size={14} className="text-[#595959]" />
+            <button onClick={onLogout} className="p-2 text-[#424242] hover:text-red-400 transition-colors">
+              <LogOut size={16} />
+            </button>
           </div>
         ) : (
-          /* Login Button - Hover: #777777 */
           <button 
             onClick={onLogin}
-            className="flex items-center justify-center gap-2 w-full mt-2 py-3 rounded-2xl bg-white text-black font-bold text-xs hover:bg-[#777777] hover:text-white transition-all shadow-md"
+            className="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
-            <LogIn size={16} /> Sign In
+            Sign In
           </button>
         )}
       </div>
-    </motion.aside>
+    </aside>
   );
 }
-
-const SidebarItem = ({ icon, label, active, onClick }) => (
-  <button 
-    onClick={onClick}
-    /* Active State: BG #262626 | Text White | Inactive Icon: #595959 */
-    className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all ${
-      active 
-        ? 'bg-[#262626] text-white shadow-sm' 
-        : 'text-[#777777] hover:bg-[#262626]/50 hover:text-white'
-    }`}
-  >
-    <span className={active ? "text-white" : "text-[#595959]"}>{icon}</span>
-    <span className="text-[14px] font-medium">{label}</span>
-  </button>
-);
