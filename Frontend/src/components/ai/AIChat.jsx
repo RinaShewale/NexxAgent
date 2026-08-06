@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Trash2, Zap, MessageSquare } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useAIStream } from '../../hooks/useAIStream';
@@ -10,21 +11,10 @@ export default function AIChat({ sandboxID, onFilesChanged }) {
   const { messages, streaming, error, sendMessage, clearChat } = useAIStream(sandboxID);
   const bottomRef = useRef(null);
   const hasTriggeredInitial = useRef(false);
-  const wasStreamingRef = useRef(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  useEffect(() => {
-    if (wasStreamingRef.current && !streaming) {
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg?.role === 'ai') {
-        onFilesChanged?.();
-      }
-    }
-    wasStreamingRef.current = streaming;
-  }, [streaming, messages, onFilesChanged]);
+  }, [messages, streaming]);
 
   useEffect(() => {
     if (initialPrompt && !hasTriggeredInitial.current && messages.length === 0 && sandboxID) {
@@ -36,114 +26,80 @@ export default function AIChat({ sandboxID, onFilesChanged }) {
   }, [initialPrompt, sandboxID, messages.length, sendMessage, setInitialPrompt]);
 
   return (
-    <div className="flex flex-col h-full bg-[#0D0E10] relative selection:bg-[#F8FAFA]/10">
-      {/* High-End Toolbar Header */}
-      <div className="h-12 px-4 border-b border-[#282728] flex items-center justify-between bg-[#0D0E10]/50 backdrop-blur-md z-10">
+    <div className="flex flex-col h-full bg-[#000] relative text-zinc-300">
+      {/* Premium Header */}
+      <div className="h-14 px-6 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-xl z-20 sticky top-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center relative">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F8FAFA] shadow-[0_0_8px_#F8FAFA]" />
+          <div className="relative">
+            <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]" />
             {streaming && (
-              <motion.span 
-                animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute w-3 h-3 rounded-full border border-[#F8FAFA] opacity-50" 
+              <motion.div 
+                animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute inset-0 bg-blue-500 rounded-full"
               />
             )}
           </div>
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#818263]">
-            Agent Assistant
-          </h2>
+          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Nexx Agent v4.0</span>
         </div>
         
         <button 
           onClick={clearChat} 
-          className="text-[10px] font-bold text-[#4F5052] hover:text-[#F8FAFA] transition-all uppercase tracking-tighter"
+          className="p-2 hover:bg-white/5 rounded-lg text-zinc-600 hover:text-white transition-all group"
+          title="Clear History"
         >
-          Clear History
+          <Trash2 size={16} className="group-active:scale-90 transition-transform" />
         </button>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-custom">
-        <AnimatePresence mode="wait">
+      {/* Messages Feed */}
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-10 custom-scrollbar">
+        <AnimatePresence mode="popLayout">
           {messages.length === 0 ? (
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="h-full flex flex-col items-center justify-center text-center px-6"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="h-full flex flex-col items-center justify-center text-center py-20"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[#161618] border border-[#282728] flex items-center justify-center mb-6 shadow-2xl">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F8FAFA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                </svg>
+              <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl relative">
+                <Sparkles className="text-white" size={28} />
+                <div className="absolute -inset-4 bg-blue-500/10 blur-3xl rounded-full" />
               </div>
-              <h3 className="text-[15px] font-medium text-[#F8FAFA] tracking-tight">How can I assist you?</h3>
-              <p className="text-[12px] text-[#818263] mt-2 leading-relaxed max-w-[220px] font-medium">
-                I can generate components, debug logic, or refine your application structure.
+              <h3 className="text-xl font-bold text-white tracking-tight">How can I help you build?</h3>
+              <p className="text-sm text-zinc-500 mt-2 max-w-[280px] leading-relaxed">
+                Describe a feature, ask for code, or let me debug your interface.
               </p>
             </motion.div>
           ) : (
-            <div className="space-y-8">
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={msg.id || i}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ChatMessage 
-                    message={{ 
-                      ...msg, 
-                      streaming: streaming && i === messages.length - 1 && msg.role === 'ai' 
-                    }} 
-                  />
-                </motion.div>
-              ))}
-            </div>
+            messages.map((msg, i) => (
+              <ChatMessage 
+                key={msg.id || i}
+                message={{ 
+                  ...msg, 
+                  streaming: streaming && i === messages.length - 1 && msg.role === 'ai' 
+                }} 
+              />
+            ))
           )}
         </AnimatePresence>
 
         {error && (
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-red-400 text-[11px] font-medium flex items-center gap-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 text-rose-400 text-xs font-medium flex items-center gap-3"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <Zap size={14} />
             {error}
           </motion.div>
         )}
         <div ref={bottomRef} className="h-4" />
       </div>
 
-      {/* Input Section */}
-      <div className="p-4 border-t border-[#282728] bg-[#0D0E10]">
+      {/* Bottom Input Section */}
+      <div className="p-6 pt-0 bg-gradient-to-t from-black via-black to-transparent">
         <ChatInput onSend={sendMessage} disabled={streaming} />
-        
-        <div className="mt-3 flex items-center justify-center gap-4 opacity-30">
-          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#282728]" />
-          <span className="text-[9px] font-bold text-[#4F5052] uppercase tracking-[0.2em]">Context: Project Root</span>
-          <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#282728]" />
-        </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .scrollbar-custom::-webkit-scrollbar {
-          width: 4px;
-        }
-        .scrollbar-custom::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .scrollbar-custom::-webkit-scrollbar-thumb {
-          background: transparent;
-          border-radius: 10px;
-          transition: background 0.3s;
-        }
-        .scrollbar-custom:hover::-webkit-scrollbar-thumb {
-          background: #282728;
-        }
-      `}} />
     </div>
   );
 }

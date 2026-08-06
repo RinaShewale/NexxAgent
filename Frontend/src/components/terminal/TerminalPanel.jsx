@@ -1,8 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Terminal } from 'xterm';
+import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { motion } from 'framer-motion';
 import { useTerminal } from '../../hooks/useTerminal';
+import { Terminal, Trash2, Zap, Wifi, WifiOff } from 'lucide-react';
 import 'xterm/css/xterm.css';
 
 export default function TerminalPanel({ agentUrl }) {
@@ -36,34 +37,36 @@ export default function TerminalPanel({ agentUrl }) {
 
     if (terminalRef.current) return;
 
-    // Terminal Configuration aligned with the Studio Palette
-    const term = new Terminal({
+    // Terminal Configuration: High-Contrast Nexx Theme
+    const term = new XTerm({
       cursorBlink: true,
-      cursorStyle: 'underline',
-      fontSize: 12,
-      lineHeight: 1.4,
-      fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace",
+      cursorStyle: 'bar',
+      fontSize: 13,
+      lineHeight: 1.5,
+      letterSpacing: 0.5,
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
       theme: {
-        background: '#0D0E10', // Night
-        foreground: '#C5C6C8', // Silver
-        cursor: '#F8FAFA',     // Seasalt
-        selectionBackground: 'rgba(248, 250, 250, 0.1)',
-        black: '#282728',      // Raisin Black
+        background: '#000000',
+        foreground: '#ffffff',
+        cursor: '#3b82f6',
+        cursorAccent: '#000000',
+        selectionBackground: 'rgba(59, 130, 246, 0.3)',
+        black: '#000000',
         red: '#f43f5e',
         green: '#10b981',
         yellow: '#f59e0b',
         blue: '#3b82f6',
         magenta: '#8b5cf6',
         cyan: '#06b6d4',
-        white: '#F8FAFA',      // Seasalt
-        brightBlack: '#4F5052', // Davy's Gray
+        white: '#ffffff',
+        brightBlack: '#404040',
         brightRed: '#fb7185',
         brightGreen: '#34d399',
         brightYellow: '#fbbf24',
         brightBlue: '#60a5fa',
         brightMagenta: '#a78bfa',
         brightCyan: '#22d3ee',
-        brightWhite: '#F8FAFA',
+        brightWhite: '#ffffff',
       },
       allowProposedApi: true,
     });
@@ -82,10 +85,6 @@ export default function TerminalPanel({ agentUrl }) {
     const fitTerminal = () => {
       try {
         if (!terminalRef.current || !fitAddonRef.current) return;
-        const el = termRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        if (!rect || rect.width === 0 || rect.height === 0) return;
         fitAddonRef.current.fit();
       } catch (err) {
         console.warn('Terminal fit failed', err);
@@ -99,7 +98,6 @@ export default function TerminalPanel({ agentUrl }) {
     resizeObserver.observe(termRef.current);
 
     setTimeout(fitTerminal, 50);
-    setTimeout(fitTerminal, 200);
 
     return () => {
       resizeObserver.disconnect();
@@ -111,34 +109,42 @@ export default function TerminalPanel({ agentUrl }) {
   }, [agentUrl, sendCommand, connected]);
 
   return (
-    <div className="flex flex-col h-full bg-[#0D0E10] overflow-hidden selection:bg-[#F8FAFA]/10">
-      {/* Utility Header Bar */}
-      <div className="h-9 px-4 border-b border-[#282728] flex items-center justify-between bg-[#161618]/30 shrink-0 select-none">
-        <div className="flex items-center gap-4">
-          <span className="text-[9px] font-bold text-[#818263] uppercase tracking-[0.25em]">
-            Terminal
-          </span>
+    <div className="flex flex-col h-full bg-[#000] overflow-hidden">
+      {/* Premium Header Bar */}
+      <div className="h-11 px-5 border-b border-white/5 flex items-center justify-between bg-white/[0.01] shrink-0 select-none">
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 text-zinc-500">
+            <Terminal size={14} />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Console</span>
+          </div>
           
-          <div className="flex items-center gap-2 border-l border-[#282728] pl-4">
-            <motion.div 
-              animate={!connected ? { opacity: [0.3, 1, 0.3] } : {}}
-              transition={{ duration: 2, repeat: Infinity }}
-              className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
-                connected ? 'bg-[#F8FAFA] shadow-[0_0_8px_#F8FAFA]' : 'bg-[#4F5052]'
-              }`} 
-            />
-            <span className="text-[9px] font-mono font-bold text-[#4F5052] uppercase tracking-tighter">
-              {connected ? 'Status: Active' : 'Status: Offline'}
+          <div className="flex items-center gap-3 border-l border-white/10 pl-5">
+            <div className="relative flex items-center justify-center">
+              <div className={`w-1.5 h-1.5 rounded-full transition-all duration-700 ${
+                connected ? 'bg-blue-500 shadow-[0_0_10px_#3b82f6]' : 'bg-zinc-800'
+              }`} />
+              {connected && (
+                <motion.div 
+                  animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute w-full h-full bg-blue-500 rounded-full"
+                />
+              )}
+            </div>
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+              {connected ? 'Active_Session' : 'Offline'}
+              {connected ? <Zap size={10} className="text-yellow-500 fill-yellow-500" /> : null}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={clearTerminal}
-            className="text-[9px] font-bold uppercase text-[#4F5052] hover:text-[#C5C6C8] transition-all px-2 py-1 rounded hover:bg-[#282728]"
+            title="Clear Console"
+            className="p-2 text-zinc-600 hover:text-white hover:bg-white/5 rounded-lg transition-all"
           >
-            Clear Shell
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
@@ -147,29 +153,36 @@ export default function TerminalPanel({ agentUrl }) {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="flex-1 min-h-0 relative p-3"
+        className="flex-1 min-h-0 relative p-4 group"
       >
-        <div ref={termRef} className="absolute inset-3" />
+        <div ref={termRef} className="absolute inset-4 overflow-hidden" />
       </motion.div>
 
-      {/* Modern Inner Glow Overlay (Decorative) */}
-      <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-[#0D0E10] to-transparent pointer-events-none opacity-50" />
+      {/* Technical Footer Detail */}
+      <div className="h-6 px-5 border-t border-white/5 bg-black flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-[8px] font-bold text-zinc-700 uppercase tracking-[0.1em]">sh --login</span>
+        </div>
+        <span className="text-[8px] font-mono text-zinc-800">UTF-8 // ZSH</span>
+      </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        /* Override xterm standard scrollbar to match our palette */
+        /* Xterm Scrollbar Customization */
         .xterm-viewport::-webkit-scrollbar {
-          width: 6px;
+          width: 4px;
         }
         .xterm-viewport::-webkit-scrollbar-track {
-          background: #0D0E10;
+          background: #000;
         }
         .xterm-viewport::-webkit-scrollbar-thumb {
-          background: #282728;
+          background: #222;
           border-radius: 10px;
         }
         .xterm-viewport::-webkit-scrollbar-thumb:hover {
-          background: #4F5052;
+          background: #333;
+        }
+        .xterm-cursor {
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
         }
       `}} />
     </div>

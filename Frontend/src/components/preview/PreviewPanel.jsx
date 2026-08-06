@@ -1,73 +1,150 @@
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Monitor, 
+  Tablet, 
+  Smartphone, 
+  RotateCw, 
+  ExternalLink, 
+  Globe,
+  Loader2
+} from 'lucide-react';
 
 export default function PreviewPanel({ previewUrl }) {
   const [device, setDevice] = useState('desktop');
   const [manualReloadKey, setManualReloadKey] = useState(0);
   const iframeRef = useRef(null);
-  const widths = { desktop: '100%', tablet: '768px', mobile: '375px' };
+  
+  // Logic remains identical
+  const widths = { 
+    desktop: '100%', 
+    tablet: '768px', 
+    mobile: '375px' 
+  };
 
-  // Sync iframe src only when the actual URL changes, without remounting the element.
-  // This prevents the white-screen flash caused by React destroying and recreating the iframe.
   useEffect(() => {
     if (iframeRef.current && previewUrl) {
       const current = iframeRef.current.src;
-      // Only update if it's genuinely a different URL (not just a React re-render).
       if (current !== previewUrl) {
         iframeRef.current.src = previewUrl;
       }
     }
   }, [previewUrl]);
 
-  // Manual reload: bump reload key to remount the iframe intentionally
   const handleReload = () => setManualReloadKey((k) => k + 1);
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0f172a]/20">
-      <div className="h-12 border-b border-white/5 flex items-center justify-between px-4 bg-[#020617]">
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1 p-1 bg-white/5 rounded-lg">
-            {['desktop', 'tablet', 'mobile'].map(d => (
-              <button
-                key={d}
-                onClick={() => setDevice(d)}
-                className={`p-1.5 rounded transition-all capitalize text-xs ${device === d ? 'bg-teal-500/20 text-teal-400 font-medium' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                {d}
-              </button>
-            ))}
+    <div className="flex-1 flex flex-col bg-[#050505] overflow-hidden">
+      {/* Premium Toolbar */}
+      <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black z-20">
+        <div className="flex items-center gap-4">
+          {/* Device Toggle Pilled */}
+          <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-xl">
+            <DeviceButton 
+              active={device === 'desktop'} 
+              onClick={() => setDevice('desktop')} 
+              icon={<Monitor size={14} />} 
+              label="Desktop"
+            />
+            <DeviceButton 
+              active={device === 'tablet'} 
+              onClick={() => setDevice('tablet')} 
+              icon={<Tablet size={14} />} 
+              label="Tablet"
+            />
+            <DeviceButton 
+              active={device === 'mobile'} 
+              onClick={() => setDevice('mobile')} 
+              icon={<Smartphone size={14} />} 
+              label="Mobile"
+            />
           </div>
+
+          <div className="w-px h-4 bg-white/10 mx-1" />
+
           <button
             onClick={handleReload}
             title="Reload preview"
-            className="p-1.5 text-slate-500 hover:text-slate-200 transition-colors rounded-lg bg-white/5 hover:bg-white/10"
+            className="p-2 text-zinc-500 hover:text-white transition-all hover:bg-white/5 rounded-lg group"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <RotateCw size={16} className="group-active:rotate-180 transition-transform duration-500" />
           </button>
         </div>
-        <div className="text-[10px] font-mono text-slate-500 bg-white/5 px-3 py-1 rounded-full border border-white/5 max-w-[300px] truncate">
-          {previewUrl || 'No preview URL'}
+
+        {/* Technical URL Bar */}
+        <div className="hidden md:flex items-center gap-3 px-4 py-1.5 bg-white/[0.03] border border-white/5 rounded-full max-w-[400px] group transition-all hover:border-white/10">
+          <Globe size={12} className="text-zinc-600 group-hover:text-blue-400 transition-colors" />
+          <span className="text-[10px] font-mono text-zinc-500 truncate select-all">
+            {previewUrl || 'localhost:3000'}
+          </span>
+          <ExternalLink size={12} className="text-zinc-700 hover:text-white cursor-pointer" />
         </div>
       </div>
-      <div className="flex-1 p-6 flex justify-center items-start overflow-auto">
-        <div
-          style={{ width: widths[device] }}
-          className="bg-white rounded-2xl h-full shadow-2xl shadow-black transition-all duration-300 overflow-hidden border border-white/10 relative"
+
+      {/* Preview Workspace */}
+      <div className="flex-1 p-6 md:p-10 flex justify-center items-start overflow-auto custom-scrollbar bg-[radial-gradient(circle_at_center,_#0a0a0a_0%,_#000_100%)]">
+        <motion.div
+          initial={false}
+          animate={{ width: widths[device] }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="bg-white rounded-[24px] h-full shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden border border-white/10 relative group"
         >
           {previewUrl ? (
-            <iframe
-              key={manualReloadKey}
-              ref={iframeRef}
-              src={previewUrl}
-              className="w-full h-full border-none"
-              title="Preview"
-            />
+            <>
+              {/* Iframe Logic Unchanged */}
+              <iframe
+                key={manualReloadKey}
+                ref={iframeRef}
+                src={previewUrl}
+                className="w-full h-full border-none"
+                title="Preview"
+              />
+              {/* Subtle glass overlay on top edge for depth */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-b from-black/5 to-transparent pointer-events-none" />
+            </>
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-              No Preview Available
+            <div className="flex flex-col items-center justify-center h-full bg-[#fcfcfc]">
+              <div className="relative mb-4">
+                <Loader2 size={32} className="text-zinc-200 animate-spin" />
+                <div className="absolute inset-0 blur-xl bg-blue-500/20 animate-pulse" />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+                Syncing with Sandbox...
+              </p>
             </div>
           )}
-        </div>
+        </motion.div>
+      </div>
+
+      {/* Mobile Breadcrumb (Visible only on very small screens) */}
+      <div className="md:hidden px-6 py-2 border-t border-white/5 bg-black text-center">
+         <span className="text-[9px] font-mono text-zinc-600 truncate block">
+          {previewUrl}
+         </span>
       </div>
     </div>
+  );
+}
+
+/** 
+ * Sub-component for Device Selection 
+ */
+function DeviceButton({ active, onClick, icon, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all
+        ${active 
+          ? 'bg-white text-black shadow-lg scale-[1.02]' 
+          : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+        }
+      `}
+    >
+      {icon}
+      <span className={`text-[10px] font-bold uppercase tracking-tight ${active ? 'block' : 'hidden lg:block'}`}>
+        {label}
+      </span>
+    </button>
   );
 }

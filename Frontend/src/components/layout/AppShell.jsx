@@ -1,4 +1,19 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Zap, 
+  Globe, 
+  Code2, 
+  Play, 
+  PanelLeft, 
+  ChevronRight,
+  LogOut,
+  Monitor
+} from 'lucide-react';
+
+// Logic Hooks & Components (Paths preserved)
 import FileExplorer from '../explorer/FileExplorer';
 import EditorPanel from '../editor/EditorPanel';
 import PreviewPanel from '../preview/PreviewPanel';
@@ -6,7 +21,7 @@ import TerminalPanel from '../terminal/TerminalPanel';
 import AIChat from '../ai/AIChat';
 import LandingPage from './LandingPage';
 import GeneratingPage from './GeneratingPage';
-import LoginPage from '../auth/LoginPage';
+import LoginPage from '../auth/LoginPage'; 
 import useSandboxStore from '../../store/sandboxStore';
 import { useFileEditor } from '../../hooks/useFileEditor';
 import { useFileTree } from '../../hooks/useFileTree';
@@ -20,14 +35,13 @@ export default function AppShell() {
 
   const [showLogin, setShowLogin] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState('preview');
-  const [sidebarWidth, setSidebarWidth] = useState(260);
-  const [bottomHeight, setBottomHeight] = useState(200);
+  const [bottomHeight, setBottomHeight] = useState(240);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isDraggingRef = useRef(null);
 
   useEffect(() => {
     if (agentUrl && viewState === 'editor') refreshTree();
-  }, [agentUrl, viewState]);
+  }, [agentUrl, viewState, refreshTree]);
 
   const handleFilesChanged = useCallback(() => refreshTree(), [refreshTree]);
 
@@ -36,59 +50,58 @@ export default function AppShell() {
   if (viewState === 'generating') return <GeneratingPage />;
 
   return (
-    <div className="h-screen w-screen bg-[#0D0E10] flex flex-col overflow-hidden text-[#F8FAFA] selection:bg-[#2dd4bf33]">
-      {/* Premium Header */}
-      <header className="flex items-center justify-between px-4 h-12 border-b border-[#282728] bg-[#0D0E10]/90 backdrop-blur-xl z-40">
-        <div className="flex items-center gap-4">
+    <div className="h-screen w-screen bg-[#000] flex flex-col overflow-hidden text-zinc-300 font-sans selection:bg-blue-500/30">
+      
+      {/* PRIMARY HEADER */}
+      <header className="flex items-center justify-between px-6 h-14 border-b border-white/5 bg-black/80 backdrop-blur-xl z-[50] sticky top-0">
+        <div className="flex items-center gap-6">
           <button 
             onClick={reset} 
-            className="p-1.5 hover:bg-[#282728] rounded-md transition-all duration-200 text-[#818263] hover:text-[#F8FAFA]"
+            className="p-2 hover:bg-white/5 rounded-lg text-zinc-500 hover:text-white transition-all group"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <ArrowLeft size={18} className="group-active:-translate-x-1 transition-transform" />
           </button>
           
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded bg-[#F8FAFA] flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#0D0E10] rounded-[1px] rotate-45" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <Sparkles className="text-black" size={18} />
             </div>
-            <span className="font-medium text-[13px] tracking-tight">
-              NexxAgent <span className="text-[#818263] font-normal mx-1">/</span> <span className="text-[#F8FAFA]">Studio</span>
-            </span>
+            <div className="flex flex-col -space-y-1">
+              <span className="text-[11px] font-black uppercase tracking-widest text-white">Nexx Studio</span>
+              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-tighter">v4.0.2-Stable</span>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full border border-[#282728] bg-[#161618] text-[10px] font-medium text-[#818263]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2dd4bf] shadow-[0_0_8px_#2dd4bf]" />
-            Live Sync
+          {/* Engine Status */}
+          <div className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-white/5 bg-white/[0.02]">
+            <div className="relative">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
+                <motion.div animate={{ scale: [1, 2], opacity: [0.5, 0] }} transition={{ duration: 2, repeat: Infinity }} className="absolute inset-0 bg-blue-500 rounded-full" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Live Sync Active</span>
           </div>
           
-          <button className="px-3 py-1.5 text-[11px] font-semibold text-[#0D0E10] bg-[#F8FAFA] hover:bg-[#C5C6C8] rounded-md transition-all active:scale-95 shadow-sm">
-            Deploy
+          <button className="flex items-center gap-2 px-5 py-2 text-[11px] font-black uppercase tracking-widest text-black bg-white hover:bg-zinc-200 rounded-xl transition-all active:scale-95 shadow-xl shadow-white/5">
+            <Zap size={14} className="fill-black" />
+            Deploy App
           </button>
 
-          {/* User Auth Info */}
-          {isAuthenticated && user ? (
-            <div className="flex items-center gap-2 pl-3 border-l border-[#282728]">
-              <img 
-                src={user.avatar} 
-                alt={user.name} 
-                className="w-6 h-6 rounded-full border border-[#282728] object-cover grayscale hover:grayscale-0 transition-all cursor-pointer" 
-              />
-              <button
-                onClick={logout}
-                className="text-[10px] text-[#818263] hover:text-[#F8FAFA] transition-colors"
-              >
-                Sign out
+          {/* User Section */}
+          <div className="h-6 w-px bg-white/10 mx-2" />
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <div className="relative group cursor-pointer">
+                <img src={user?.avatar} alt="User" className="w-8 h-8 rounded-xl border border-white/10 grayscale group-hover:grayscale-0 transition-all" />
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full" />
+              </div>
+              <button onClick={logout} className="p-2 text-zinc-600 hover:text-rose-400 transition-colors">
+                <LogOut size={18} />
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => setShowLogin(true)}
-              className="text-[11px] font-medium px-3 py-1.5 rounded-md hover:bg-[#282728] text-[#F8FAFA] transition-all border border-transparent hover:border-[#4F5052]"
-            >
+            <button onClick={() => setShowLogin(true)} className="text-xs font-bold text-zinc-500 hover:text-white transition-colors">
               Sign In
             </button>
           )}
@@ -96,128 +109,132 @@ export default function AppShell() {
       </header>
 
       <main className="flex-1 flex overflow-hidden">
-        {/* Left: AI Chat - Styled with a softer secondary background */}
-        <div 
-          className={`${isSidebarOpen ? 'w-[360px]' : 'w-0'} transition-all duration-300 ease-in-out border-r border-[#282728] bg-[#0D0E10] flex flex-col overflow-hidden shrink-0`}
+        
+        {/* LEFT: AI CHAT SIDEBAR */}
+        <motion.div 
+          initial={false}
+          animate={{ width: isSidebarOpen ? 380 : 0 }}
+          className="border-r border-white/5 bg-black flex flex-col overflow-hidden shrink-0 relative z-30 shadow-2xl"
         >
           <AIChat sandboxID={sandboxID} onFilesChanged={handleFilesChanged} />
-        </div>
+        </motion.div>
 
-        {/* Right: Workspace */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#0D0E10]">
-          {/* Internal Workspace Header */}
-          <div className="flex items-center justify-between px-4 h-10 border-b border-[#282728] bg-[#0D0E10]">
-            <div className="flex p-[3px] bg-[#161618] rounded-lg border border-[#282728]">
-              {['preview', 'code'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveRightTab(tab)}
-                  className={`px-3 py-1 rounded-[5px] text-[11px] font-medium capitalize transition-all duration-200 ${
-                    activeRightTab === tab 
-                      ? 'bg-[#282728] text-[#F8FAFA] shadow-sm' 
-                      : 'text-[#818263] hover:text-[#C5C6C8]'
-                  }`}
+        {/* WORKSPACE AREA */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#050505]">
+          
+          {/* TAB STRIP */}
+          <div className="flex items-center justify-between px-6 h-12 border-b border-white/5 bg-black">
+            <div className="flex items-center gap-6">
+                <button 
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className={`p-2 rounded-lg transition-all ${!isSidebarOpen ? 'bg-blue-500 text-white' : 'text-zinc-600 hover:text-white'}`}
                 >
-                  {tab}
+                  <PanelLeft size={18} />
                 </button>
-              ))}
+
+                <div className="flex p-1 bg-white/5 rounded-xl border border-white/5 relative">
+                    {['preview', 'code'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveRightTab(tab)}
+                            className={`relative px-5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest z-10 transition-colors ${
+                                activeRightTab === tab ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'
+                            }`}
+                        >
+                            {tab === 'preview' ? 'Preview' : 'Source Code'}
+                            {activeRightTab === tab && (
+                                <motion.div layoutId="workspaceTab" className="absolute inset-0 bg-white rounded-lg -z-10" />
+                            )}
+                        </button>
+                    ))}
+                </div>
             </div>
-            
-            <div className="flex items-center gap-1">
-               <button 
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`p-1.5 rounded-md transition-colors ${!isSidebarOpen ? 'bg-[#F8FAFA] text-[#0D0E10]' : 'text-[#818263] hover:text-[#F8FAFA]'}`}
-                title="Toggle Sidebar"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+
+            <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <Globe size={12} className="text-blue-400" />
+                    <span className="text-[10px] font-bold text-blue-400 font-mono">Nexx-Local:3000</span>
+                </div>
             </div>
           </div>
 
+          {/* MAIN CONTENT SPLIT */}
           <div className="flex-1 flex overflow-hidden relative">
-            {activeRightTab === 'preview' ? (
-              <div className="flex-1 bg-[#161618] animate-in fade-in duration-500">
-                <PreviewPanel previewUrl={previewUrl} />
-              </div>
-            ) : (
-              <div className="flex-1 flex overflow-hidden">
-                {/* File Explorer Panel */}
-                <div 
-                  style={{ width: sidebarWidth }} 
-                  className="border-r border-[#282728] shrink-0 bg-[#0D0E10]"
+            <AnimatePresence mode="wait">
+              {activeRightTab === 'preview' ? (
+                <motion.div 
+                    key="preview" 
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                    className="flex-1"
                 >
-                  <FileExplorer agentUrl={agentUrl} onFileClick={openFile} />
-                </div>
+                    <PreviewPanel previewUrl={previewUrl} />
+                </motion.div>
+              ) : (
+                <motion.div 
+                    key="code" 
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                    className="flex-1 flex"
+                >
+                  {/* File Explorer Sidebar */}
+                  <div className="w-[260px] border-r border-white/5 bg-black shrink-0">
+                    <FileExplorer agentUrl={agentUrl} onFileClick={openFile} />
+                  </div>
 
-                {/* Editor & Terminal Section */}
-                <div className="flex-1 flex flex-col min-w-0">
-                  <div className="flex-1 overflow-hidden">
-                    <EditorPanel
-                      openFiles={openFiles} 
-                      activeFile={activeFile} 
-                      activeFileData={activeFileData}
-                      loading={loading} 
-                      saveStatus={saveStatus} 
-                      onSelect={setActiveFile}
-                      onClose={closeFile} 
-                      onSave={saveFile} 
-                      onContentChange={updateContent}
+                  {/* Editor & Terminal Vertical Split */}
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <div className="flex-1">
+                      <EditorPanel
+                        openFiles={openFiles} 
+                        activeFile={activeFile} 
+                        activeFileData={activeFileData}
+                        loading={loading} 
+                        saveStatus={saveStatus} 
+                        onSelect={setActiveFile}
+                        onClose={closeFile} 
+                        onSave={saveFile} 
+                        onContentChange={updateContent}
+                      />
+                    </div>
+
+                    {/* Resize Handle Horizontal */}
+                    <div 
+                      className="h-1 bg-white/5 hover:bg-blue-500/50 cursor-row-resize transition-all relative z-40"
+                      onMouseDown={() => isDraggingRef.current = 'bottom'}
                     />
-                  </div>
 
-                  {/* Horizontal Resize Handle */}
-                  <div 
-                    className="h-[1px] bg-[#282728] hover:bg-[#2dd4bf] cursor-row-resize transition-colors relative group"
-                    onMouseDown={() => isDraggingRef.current = 'bottom'}
-                  >
-                    <div className="absolute inset-x-0 -top-1 -bottom-1 z-10" />
+                    {/* Terminal Bottom Panel */}
+                    <div style={{ height: bottomHeight }} className="bg-black border-t border-white/5">
+                      <TerminalPanel agentUrl={agentUrl} />
+                    </div>
                   </div>
-
-                  {/* Terminal Panel */}
-                  <div 
-                    style={{ height: bottomHeight }} 
-                    className="bg-[#0D0E10] border-t border-[#282728]"
-                  >
-                    <TerminalPanel agentUrl={agentUrl} />
-                  </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </main>
 
-      {/* Resize Overlay */}
+      {/* DRAG OVERLAY */}
       {isDraggingRef.current && (
         <div 
-          className="fixed inset-0 z-50 cursor-row-resize"
+          className="fixed inset-0 z-[100] cursor-row-resize"
           onMouseMove={(e) => {
             if (isDraggingRef.current === 'bottom') {
               const h = window.innerHeight - e.clientY;
-              // Constraints: min 80px, max 60% of height
-              setBottomHeight(Math.max(80, Math.min(h, window.innerHeight * 0.6)));
+              setBottomHeight(Math.max(100, Math.min(h, window.innerHeight * 0.7)));
             }
           }}
           onMouseUp={() => isDraggingRef.current = null}
         />
       )}
 
-      {/* Global Style Inject for the specific palette */}
+      {/* CUSTOM SCROLLBAR GLOBAL */}
       <style dangerouslySetInnerHTML={{ __html: `
-        :root {
-          --color-seasalt: #F8FAFA;
-          --color-silver: #C5C6C8;
-          --color-gray: #818263;
-          --color-davys: #4F5052;
-          --color-raisin: #282728;
-          --color-night: #0D0E10;
-        }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #282728; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4F5052; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #333; }
+        * { scrollbar-width: thin; scrollbar-color: #1a1a1a transparent; }
       `}} />
     </div>
   );

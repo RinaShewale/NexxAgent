@@ -1,53 +1,36 @@
-import { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Sparkles, User, Copy, Check } from 'lucide-react';
 
 export default function ChatMessage({ message }) {
   const isUser = message.role === 'user';
   
-  // Advanced splitting for code blocks and basic markdown patterns
   const elements = useMemo(() => {
     return message.content.split(/(```[\w]*\n?[\s\S]*?```)/g).map((part, i) => {
-      // Handle Code Blocks
       if (part.startsWith('```')) {
         const lang = part.match(/^```(\w+)/)?.[1] || 'code';
         const code = part.replace(/^```[\w]*\n?/, '').replace(/```$/, '').trim();
         
         return (
-          <div key={i} className="my-4 group relative">
-            <div className="absolute top-0 right-4 -translate-y-1/2 px-2 py-0.5 bg-[#282728] border border-[#4F5052] rounded text-[9px] font-bold text-[#818263] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-              {lang}
+          <div key={i} className="my-6 rounded-xl border border-white/10 bg-[#050505] overflow-hidden group/code shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{lang}</span>
+              <button className="text-zinc-500 hover:text-white transition-colors">
+                <Copy size={14} />
+              </button>
             </div>
-            <pre className="bg-[#0D0E10] rounded-xl p-4 overflow-x-auto border border-[#282728] shadow-inner font-mono text-[11px] leading-relaxed text-[#C5C6C8] scrollbar-none">
-              <code className="block">{code}</code>
+            <pre className="p-5 overflow-x-auto font-mono text-[13px] leading-relaxed text-zinc-300">
+              <code>{code}</code>
             </pre>
           </div>
         );
       }
 
-      // Handle Text Content with Basic Markup (Bold and Lists)
       return (
-        <div key={i} className="space-y-2 text-[13px] leading-relaxed text-[#C5C6C8] whitespace-pre-wrap">
-          {part.split('\n').map((line, lineIdx) => {
-            // Check for Bold: **text**
-            let processedLine = line.split(/(\*\*.*?\*\*)/g).map((segment, segIdx) => {
-              if (segment.startsWith('**') && segment.endsWith('**')) {
-                return <strong key={segIdx} className="text-[#F8FAFA] font-semibold">{segment.slice(2, -2)}</strong>;
-              }
-              return segment;
-            });
-
-            // Check for Bullet points: "- "
-            if (line.trim().startsWith('- ')) {
-              return (
-                <div key={lineIdx} className="flex gap-3 pl-2">
-                  <span className="text-[#818263] mt-1.5 w-1 h-1 rounded-full bg-[#4F5052] shrink-0" />
-                  <span className="flex-1">{processedLine.slice(1)}</span>
-                </div>
-              );
-            }
-
-            return <p key={lineIdx}>{processedLine}</p>;
-          })}
+        <div key={i} className="space-y-4 text-[14px] leading-relaxed text-zinc-300">
+          {part.split('\n').map((line, idx) => (
+            <p key={idx}>{line}</p>
+          ))}
         </div>
       );
     });
@@ -57,56 +40,36 @@ export default function ChatMessage({ message }) {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex gap-4 ${isUser ? 'flex-row-reverse pl-12' : 'flex-row pr-12'}`}
+      className={`flex gap-5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
-      {/* Avatar Design */}
-      <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all border ${
+      {/* Stylized Avatar */}
+      <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${
         isUser 
-          ? 'bg-[#161618] border-[#282728] text-[#818263]' 
-          : 'bg-[#F8FAFA] border-[#F8FAFA] text-[#0D0E10] shadow-[0_0_15px_rgba(248,250,250,0.2)]'
+          ? 'bg-zinc-900 border-white/10 text-zinc-500' 
+          : 'bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]'
       }`}>
-        {isUser ? (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
-        ) : (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-          </svg>
-        )}
+        {isUser ? <User size={18} /> : <Sparkles size={18} />}
       </div>
 
-      {/* Message Body */}
-      <div className={`flex flex-col gap-1 max-w-full ${isUser ? 'items-end' : 'items-start'}`}>
-        <div className={`px-1 py-1 text-[9px] font-bold uppercase tracking-[0.2em] mb-1 ${isUser ? 'text-[#4F5052]' : 'text-[#818263]'}`}>
-          {isUser ? 'You' : 'Agent'}
-        </div>
+      <div className={`flex flex-col gap-2 max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1">
+          {isUser ? 'Sender' : 'Nexx Intelligence'}
+        </span>
         
-        <div className={`relative px-4 py-3 rounded-2xl border transition-all duration-300 ${
-          isUser
-            ? 'bg-[#161618]/50 border-[#282728] text-[#F8FAFA]'
-            : 'bg-[#161618] border-[#282728] shadow-sm'
+        <div className={`relative px-1 py-1 rounded-2xl transition-all ${
+          isUser ? 'text-zinc-100' : 'text-zinc-300'
         }`}>
           {elements}
           
-          {/* Enhanced Streaming Cursor */}
+          {/* Blue Glowing Cursor */}
           {message.streaming && (
             <motion.span 
-              animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: "steps(2)" }}
-              className="inline-block w-[2px] h-[14px] bg-[#F8FAFA] align-middle ml-1 shadow-[0_0_8px_#F8FAFA]" 
+              animate={{ opacity: [1, 0] }}
+              transition={{ duration: 0.6, repeat: Infinity }}
+              className="inline-block w-1.5 h-4 bg-blue-500 ml-1 rounded-full shadow-[0_0_10px_#3b82f6]" 
             />
           )}
         </div>
-
-        {/* Timestamp or Status Placeholder (Subtle UX hint) */}
-        {!isUser && !message.streaming && (
-          <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[8px] font-bold text-[#4F5052] uppercase tracking-widest">
-              Verified by Agent v1.0
-            </span>
-          </div>
-        )}
       </div>
     </motion.div>
   );

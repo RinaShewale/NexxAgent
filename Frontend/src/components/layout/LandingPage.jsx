@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Logic Hooks (Ensure these paths match your project)
 import useSandboxStore from '../../store/sandboxStore';
 import { useSandbox } from '../../hooks/useSandbox';
 import useAuth from '../../hooks/useAuth';
 
-// Feature Components
 import Sidebar from '../features/Sidebar';
 import TopNav from '../features/TopNav';
 import HeroSection from '../features/HeroSection';
@@ -16,19 +13,17 @@ import NotificationPanel from '../features/NotificationPanel';
 import LoginPage from '../auth/LoginPage'; 
 
 export default function LandingPage() {
-  // 1. Auth & Logic Hooks
   const { user, isAuthenticated, logout } = useAuth();
   const { error, setError, setInitialPrompt } = useSandboxStore();
   const { triggerStartSandbox } = useSandbox();
 
-  // 2. UI State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeOverlay, setActiveOverlay] = useState(null); // 'search', 'settings', 'notify'
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState(null); 
   const [showLogin, setShowLogin] = useState(false);
   const [activeTab, setActiveTab] = useState('Playground');
   const [prompt, setPrompt] = useState('');
 
-  // 3. Actions
   const handleStartGenerate = async () => {
     if (!prompt.trim()) return;
     setError(null);
@@ -36,17 +31,19 @@ export default function LandingPage() {
     await triggerStartSandbox(prompt);
   };
 
-  const closeOverlays = () => setActiveOverlay(null);
-
-  // 4. Conditional Auth Rendering
   if (showLogin) return <LoginPage onCancel={() => setShowLogin(false)} />;
 
   return (
-    <div className="flex h-screen w-full bg-[#000000] text-[#e5e5e5] font-sans overflow-hidden selection:bg-[#424242]">
+    <div className="flex h-screen w-full bg-[#000] text-[#fafafa] font-sans overflow-hidden selection:bg-white/20">
       
       {/* DESKTOP SIDEBAR */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
+      <motion.div 
+        animate={{ width: isSidebarCollapsed ? 80 : 280 }}
+        className="hidden lg:block flex-shrink-0 border-r border-white/5 bg-[#050505]"
+      >
         <Sidebar 
+          isCollapsed={isSidebarCollapsed}
+          setIsCollapsed={setIsSidebarCollapsed}
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
           onSettings={() => setActiveOverlay('settings')}
@@ -55,21 +52,21 @@ export default function LandingPage() {
           isAuthenticated={isAuthenticated}
           user={user}
         />
-      </div>
+      </motion.div>
 
-      {/* MOBILE SIDEBAR (Drawer) */}
+      {/* MOBILE SIDEBAR */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] lg:hidden"
             />
             <motion.div 
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-72 z-[70] lg:hidden"
+              className="fixed inset-y-0 left-0 w-72 z-[70] lg:hidden bg-[#050505]"
             >
               <Sidebar 
                 activeTab={activeTab} 
@@ -85,21 +82,21 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col relative min-w-0">
+      <main className="flex-1 flex flex-col relative min-w-0 overflow-hidden">
         <TopNav 
+          activeTab={activeTab}
           onMenuClick={() => setIsMobileMenuOpen(true)}
           onSearch={() => setActiveOverlay('search')} 
           onNotify={() => setActiveOverlay('notify')} 
         />
 
-        <div className="flex-1 overflow-y-auto relative px-6 custom-scrollbar">
-            {/* Elegant Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] pointer-events-none opacity-50">
-                <div className="absolute inset-0 bg-gradient-to-b from-[#262626]/30 via-transparent to-transparent blur-[120px]" />
+        <div className="flex-1 overflow-y-auto relative custom-scrollbar">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent blur-[120px]" />
             </div>
 
-            <div className="max-w-4xl mx-auto pt-16 pb-24 relative z-10">
+            <div className="max-w-5xl mx-auto px-6 pt-12 pb-24 relative z-10">
               <HeroSection 
                 prompt={prompt}
                 setPrompt={setPrompt}
@@ -109,11 +106,10 @@ export default function LandingPage() {
             </div>
         </div>
 
-        {/* FULL SCREEN OVERLAYS */}
         <AnimatePresence>
-          {activeOverlay === 'search' && <SearchOverlay onClose={closeOverlays} />}
-          {activeOverlay === 'settings' && <SettingsModal onClose={closeOverlays} />}
-          {activeOverlay === 'notify' && <NotificationPanel onClose={closeOverlays} />}
+          {activeOverlay === 'search' && <SearchOverlay onClose={() => setActiveOverlay(null)} />}
+          {activeOverlay === 'settings' && <SettingsModal onClose={() => setActiveOverlay(null)} />}
+          {activeOverlay === 'notify' && <NotificationPanel onClose={() => setActiveOverlay(null)} />}
         </AnimatePresence>
       </main>
     </div>

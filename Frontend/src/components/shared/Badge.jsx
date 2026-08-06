@@ -1,43 +1,34 @@
 import { motion } from 'framer-motion';
 
 const variants = {
-  // Desaturated Jade
-  green: 'bg-[#10b98110] text-[#10b981] border-[#10b98130]',
-  // Muted Rose
-  red: 'bg-[#f43f5e10] text-[#f43f5e] border-[#f43f5e30]',
-  // Soft Amber
-  yellow: 'bg-[#f59e0b10] text-[#f59e0b] border-[#f59e0b30]',
-  // Indigo Blue
-  blue: 'bg-[#3b82f610] text-[#3b82f6] border-[#3b82f630]',
-  // Royal Violet
-  violet: 'bg-[#8b5cf610] text-[#8b5cf6] border-[#8b5cf630]',
-  // Premium Neutral (Studio Theme)
-  gray: 'bg-[#161618] text-[#818263] border-[#282728]',
+  green: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  red: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  yellow: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  violet: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  zinc: 'bg-white/5 text-zinc-400 border-white/10',
 };
 
-export default function Badge({ label, variant = 'gray', dot = false }) {
+export default function Badge({ label, variant = 'zinc', dot = false }) {
   return (
     <span 
       className={`
-        inline-flex items-center gap-1.5 px-2 py-0.5 
-        text-[9px] font-bold uppercase tracking-[0.15em] 
-        rounded-md border transition-all duration-300
+        inline-flex items-center gap-1.5 px-2.5 py-0.5 
+        text-[10px] font-bold uppercase tracking-widest 
+        rounded-full border transition-all duration-300
         ${variants[variant]}
       `}
     >
       {dot && (
         <span className="relative flex h-1.5 w-1.5">
           <motion.span 
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className={`
-              relative inline-flex rounded-full h-1.5 w-1.5 bg-current
-              ${variant !== 'gray' ? 'shadow-[0_0_8px_currentColor]' : ''}
-            `}
+            animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current"
           />
         </span>
       )}
-      <span className="leading-none pt-[1px]">{label}</span>
+      <span className="leading-none">{label}</span>
     </span>
   );
 }

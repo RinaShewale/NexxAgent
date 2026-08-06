@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Terminal, Loader2 } from 'lucide-react';
 
 export default function ChatInput({ onSend, disabled }) {
   const [value, setValue] = useState('');
@@ -9,26 +10,19 @@ export default function ChatInput({ onSend, disabled }) {
     if (!value.trim() || disabled) return;
     onSend(value);
     setValue('');
-    // Reset height if auto-expanding logic was applied
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
-  const isActive = value.trim().length > 0 && !disabled;
-
   return (
-    <div className="relative group p-0.5">
-      {/* Background Glow Effect on Focus */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#282728] to-[#4F5052] rounded-[18px] opacity-0 group-focus-within:opacity-20 blur-sm transition-opacity duration-500 pointer-events-none" />
-      
-      <div className="relative flex flex-col bg-[#161618] border border-[#282728] rounded-[16px] focus-within:border-[#4F5052] transition-all duration-300 shadow-2xl">
+    <div className="max-w-3xl mx-auto w-full group">
+      <div className="relative flex flex-col bg-zinc-900/50 border border-white/10 rounded-[24px] focus-within:border-white/20 focus-within:bg-zinc-900/80 transition-all duration-300 shadow-2xl overflow-hidden backdrop-blur-md">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
-            // Simple auto-expand logic
             e.target.style.height = 'auto';
-            e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
+            e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
           }}
           onKeyDown={(e) => { 
             if (e.key === 'Enter' && !e.shiftKey) { 
@@ -36,75 +30,42 @@ export default function ChatInput({ onSend, disabled }) {
               handleSend(); 
             } 
           }}
-          placeholder="Describe a feature or fix..."
-          className="w-full bg-transparent border-none outline-none text-[13px] leading-relaxed p-4 text-[#F8FAFA] placeholder-[#818263] resize-none min-h-[52px] max-h-40 scrollbar-none"
+          placeholder="Ask Nexx to build something..."
+          className="w-full bg-transparent border-none outline-none text-sm leading-relaxed p-5 text-white placeholder-zinc-600 resize-none min-h-[60px] max-h-[200px]"
           rows={1}
         />
         
-        <div className="flex items-center justify-between px-3 pb-3">
+        <div className="flex items-center justify-between px-4 pb-4">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#0D0E10] border border-[#282728]">
-               <div className={`w-1 h-1 rounded-full ${disabled ? 'bg-[#818263] animate-pulse' : 'bg-[#F8FAFA]'}`} />
-               <span className="text-[9px] font-bold text-[#818263] uppercase tracking-widest">
-                 {disabled ? 'Agent Thinking' : 'Ready'}
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/40 border border-white/5">
+               <Terminal size={12} className="text-zinc-500" />
+               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                 {disabled ? 'Processing...' : 'Ready'}
                </span>
             </div>
           </div>
 
           <motion.button
-            whileTap={{ scale: 0.96 }}
+            whileHover={value.trim() ? { scale: 1.05 } : {}}
+            whileTap={value.trim() ? { scale: 0.95 } : {}}
             onClick={handleSend}
-            disabled={!isActive}
-            className={`flex items-center justify-center h-8 px-4 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-all duration-300 ${
-              isActive 
-                ? 'bg-[#F8FAFA] text-[#0D0E10] hover:bg-[#C5C6C8] shadow-[0_0_15px_rgba(248,250,250,0.15)]' 
-                : 'bg-[#282728] text-[#4F5052] cursor-not-allowed'
+            disabled={!value.trim() || disabled}
+            className={`flex items-center gap-2 px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
+              value.trim() && !disabled 
+                ? 'bg-white text-black hover:bg-zinc-200' 
+                : 'bg-white/5 text-zinc-700 cursor-not-allowed'
             }`}
           >
-            <AnimatePresence mode="wait">
-              {disabled ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-1"
-                >
-                  <motion.span 
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    Processing
-                  </motion.span>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="send"
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
-                  className="flex items-center gap-1.5"
-                >
-                  <span>Send</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>
-                  </svg>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {disabled ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            <span>Send</span>
           </motion.button>
         </div>
       </div>
-
-      {/* Subtle Hint Bar */}
-      <div className="flex items-center justify-between mt-2 px-2 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500">
-        <span className="text-[10px] text-[#4F5052] font-medium">
-          Shift + Enter for new line
-        </span>
-        <div className="flex gap-1">
-           <span className="px-1.5 py-0.5 rounded border border-[#282728] bg-[#161618] text-[9px] text-[#818263] font-bold">⌘</span>
-           <span className="px-1.5 py-0.5 rounded border border-[#282728] bg-[#161618] text-[9px] text-[#818263] font-bold">ENTER</span>
-        </div>
+      
+      <div className="flex items-center justify-center gap-4 mt-3 opacity-0 group-focus-within:opacity-100 transition-opacity">
+        <p className="text-[10px] text-zinc-600 font-medium tracking-tight">
+          <span className="text-zinc-400">Shift + Enter</span> for new line
+        </p>
       </div>
     </div>
   );
