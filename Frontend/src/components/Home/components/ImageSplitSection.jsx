@@ -17,71 +17,56 @@ const ImageSplitSection = () => {
   useEffect(() => {
     const ctx = gsap.context(() => {
       
-      // 1. FIXED LINE ANIMATION
+      // 1. LINE ANIMATION - REVISED TO BRIDGE HERO GAP
       gsap.fromTo(
         ".split-center-line",
-        { 
-          scaleY: 0, // Start at 0 height
-        },
+        { scaleY: 0 },
         {
           scaleY: 1,
           transformOrigin: "top center",
           ease: "none",
           scrollTrigger: {
             trigger: containerRef.current,
-            // Start growing as soon as the top of this section enters the bottom of the screen
-            start: "top bottom", 
-            // End when the bottom of this section reaches the bottom of the screen
-            end: "bottom bottom",
-            scrub: true,
+            start: "top bottom", // Starts growing as soon as the Hero starts leaving
+            end: "bottom center", 
+            scrub: 1.5,
           }
         }
       );
 
-      // 2. Parallax + Horizontal Split for all cards
+      // 2. BLUE CURVE LOGIC (U-Shape Movement) - Unchanged
       const cards = containerRef.current.querySelectorAll('.image-card-wrapper');
-      cards.forEach((card, idx) => {
-        const isLeft = card.classList.contains('card-left');
-        const imgLeftInner = card.querySelector('.img-left-inner');
-        const imgRightInner = card.querySelector('.img-right-inner');
+      cards.forEach((card, i) => {
+        const isLeft = i < 2;
+        const isOuter = i === 0 || i === 3;
+        const xMove = isLeft ? (isOuter ? -250 : -80) : (isOuter ? 250 : 80);
+        const yMove = isOuter ? -350 : -120; 
 
-        // Upward movement (Parallax)
         gsap.fromTo(
           card,
-          { y: 100 },
+          { y: 150, x: 0, filter: "blur(0px)" },
           {
-            y: -100,
-            ease: "none",
+            y: yMove,
+            x: xMove,
+            filter: "blur(4px)",
+            ease: "power2.in", 
             scrollTrigger: {
-              trigger: card,
+              trigger: containerRef.current,
               start: "top bottom",
               end: "bottom top",
-              scrub: 1,
+              scrub: 1.5,
             }
           }
         );
 
-        // Splitting the image in half horizontally on scroll
-        if (imgLeftInner && imgRightInner) {
-          gsap.to(imgLeftInner, {
-            x: -30,
-            scrollTrigger: {
-              trigger: card,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: true
-            }
-          });
-          gsap.to(imgRightInner, {
-            x: 30,
-            scrollTrigger: {
-              trigger: card,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: true
-            }
-          });
-        }
+        const img = card.querySelector('img');
+        gsap.fromTo(img, { scale: 1.2 }, {
+          scale: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: card, start: "top bottom", end: "bottom top", scrub: true
+          }
+        });
       });
 
     }, containerRef);
@@ -92,41 +77,23 @@ const ImageSplitSection = () => {
   return (
     <section 
       ref={containerRef} 
-      // overflow-visible is important so the line can "reach up" into the Hero section
       className="relative w-full min-h-screen py-32 bg-[#FDF3E4] flex items-center justify-center overflow-visible"
     >
-      {/* 
-        THE CONNECTING LINE 
-        Starts -33vh above the section to close the gap with the Hero stem.
-      */}
+      {/* THE CONNECTING LINE: Bridges the 31.5vh gap from the Hero stem */}
       <div 
-        className="split-center-line absolute left-1/2 -translate-x-1/2 -top-[33vh] w-[6px] bg-[#A35100] z-10 origin-top" 
-        style={{ height: 'calc(100% + 33vh)' }}
+        className="split-center-line absolute left-1/2 -translate-x-1/2 -top-[31.5vh] w-[6px] bg-[#A35100] z-10 origin-top" 
+        style={{ height: 'calc(100% + 31.5vh)' }}
       />
 
-      <div className="relative w-full max-w-[1300px] px-6 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 z-20">
+      <div className="relative w-full max-w-[1300px] px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 z-20">
         {images.map((item, i) => (
-          <div 
-            key={i} 
-            className={`image-card-wrapper ${i < 2 ? 'card-left' : 'card-right'} relative w-full h-[400px] md:h-[500px] flex gap-[2px] overflow-hidden`}
-          >
-            {/* Left Half */}
-            <div className="w-1/2 h-full overflow-hidden">
-              <div className="img-left-inner w-[200%] h-full">
-                <img src={item.src} className="h-full w-full object-cover grayscale brightness-90" alt="" />
-              </div>
-            </div>
-            {/* Right Half */}
-            <div className="w-1/2 h-full overflow-hidden">
-              <div className="img-right-inner w-[200%] h-full -translate-x-1/2">
-                <img src={item.src} className="h-full w-full object-cover grayscale brightness-90" alt="" />
-              </div>
-            </div>
+          <div key={i} className="image-card-wrapper relative w-full max-w-[240px] mx-auto aspect-square overflow-hidden" style={{ willChange: "transform, filter" }}>
+            <img src={item.src} className="h-full w-full object-cover grayscale brightness-90" alt={item.alt} />
           </div>
         ))}
       </div>
     </section>
   );
 };
-
+  
 export default ImageSplitSection;
