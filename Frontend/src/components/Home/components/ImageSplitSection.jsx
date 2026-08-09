@@ -77,7 +77,7 @@ const ImageSplitSection = () => {
   return (
     <section 
       ref={containerRef} 
-      className="relative w-full min-h-screen py-32 bg-[#FDF3E4] flex items-center justify-center overflow-visible"
+      className="relative w-full min-h-2 py-32 bg-[#FDF3E4] flex items-center justify-center overflow-visible"
     >
       {/* THE CONNECTING LINE: Bridges the 31.5vh gap from the Hero stem */}
       <div 
