@@ -1,21 +1,28 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const DescriptionSection = () => {
-  const lineRef = useRef();
+  const containerRef = useRef();
 
   useEffect(() => {
-    gsap.from(".desc-text", {
-      scrollTrigger: {
-        trigger: ".desc-container",
-        start: "top 60%",
-        end: "bottom 20%",
-        scrub: 1,
-      },
-      opacity: 0,
-      x: 50,
-      stagger: 0.5
-    });
+    const ctx = gsap.context(() => {
+      gsap.from(".desc-text", {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 60%",
+          end: "bottom 20%",
+          scrub: 1,
+        },
+        opacity: 0,
+        x: 50,
+        stagger: 0.5
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
