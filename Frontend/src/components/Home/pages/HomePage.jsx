@@ -7,6 +7,7 @@ import Hero from '../components/Hero';
 import ImageSplitSection from '../components/ImageSplitSection';
 import DescriptionSection from '../components/DescriptionSection';
 import Footer from '../components/Footer';
+import KineticEditorialHero from '../components/KineticEditorialHero';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -46,6 +47,7 @@ const HomePage = () => {
       <div className="relative z-10 bg-[#FDF3E4]">
         <ImageSplitSection />
         <DescriptionSection />
+        <KineticEditorialHero />
         <Footer />
       </div>
     </main>
