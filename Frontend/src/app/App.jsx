@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import InteractiveLoadingPage from './components/Home/pages/InteractiveLoadingPage';
-import HomePage from './components/Home/pages/HomePage';
-
-
-
+import AppRoute from './AppRouter'; // Import the router we just created
+import InteractiveLoadingPage from '../components/Home/pages/InteractiveLoadingPage';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +12,7 @@ export default function App() {
           onComplete={() => setIsLoading(false)} 
         />
       ) : (
-        <HomePage />
+        <AppRoute /> 
       )}
     </div>
   );
