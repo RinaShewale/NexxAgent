@@ -2,11 +2,11 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout'; // Import the new layout
 import HomePage from '../components/Home/pages/HomePage'; // Import the HomePage component
+import Product from '../components/Home/pages/Product';
+import About from '../components/Home/pages/About';
+import WorkDetail from '../components/Home/pages/WorkDetail';
 
-// Placeholder components (Ideally these should also be in a /pages folder)
-const Product = () => <div className="p-24">Product Page</div>;
-const About = () => <div className="p-24">About Page</div>;
-const WorkDetail = () => <div className="p-24">Work Detail Page</div>;
+
 
 const router = createBrowserRouter([
   {

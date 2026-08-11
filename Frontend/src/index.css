@@ -1,11 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #2dd4bf; /* Teal 400 */
+  --primary: #2dd4bf; 
   --primary-glow: rgba(45, 212, 191, 0.2);
-  --bg-dark: #020617; /* Slate 950 */
-  --bg-card: #0f172a; /* Slate 900 */
+  --bg-dark: #020617; 
+  --bg-card: #0f172a; 
   --border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ── LENIS CRITICAL SETUP (Fixes the Glitch) ── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }
 
 /* ── Custom scrollbar ── */
@@ -21,14 +42,16 @@
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
 /* ── Base reset ── */
-html, body, #root {
-  min-height: 100%;
+html, body {
   width: 100%;
-  overflow-x: hidden;
+  min-height: 100%;
+  /* Removed overflow-x: hidden from here as Lenis handles it better */
   background: var(--bg-dark);
   color: #f1f5f9;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
 }
 
 /* ── Animations ── */

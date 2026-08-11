@@ -1,16 +1,18 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Navbar from '../components/Home/components/Navbar';
+import PageTransition from "../components/Home/Loading/PageTransition";
+import Navbar from "../components/Home/components/Navbar";
 
 const MainLayout = () => {
   return (
-    <>
+    <div className="bg-[#FFF2E0] min-h-screen">
+      {/* Navbar stays on top normally, but Transition SVG (z-9999) will cover it */}
       <Navbar />
-      <main>
-        {/* This is where the child routes will render */}
-        <Outlet />
-      </main>
-    </>
+      
+      {/* 
+        PageTransition renders the <Outlet /> content 
+        and handles the animation logic 
+      */}
+      <PageTransition />
+    </div>
   );
 };
 

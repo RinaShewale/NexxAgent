@@ -8,29 +8,66 @@ gsap.registerPlugin(ScrollTrigger);
 
 const Footer = () => {
   const footerRef = useRef(null);
-  const magneticArea = useRef(null);
+  const bigTextRef = useRef(null);
+  const infoSectionRef = useRef(null);
   const phrase = "let's work together";
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Smooth Scroll Reveal for the sections
-      gsap.from(".reveal-up", {
-        y: 80,
+      // 1. Scroll-based animation for the Big Heading (Parallax + Scale)
+      gsap.fromTo(bigTextRef.current, 
+        { 
+          y: 100, 
+          scale: 0.9, 
+          opacity: 0 
+        },
+        {
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: "top bottom", // Starts when footer enters bottom of screen
+            end: "center center", // Ends when footer is centered
+            scrub: 1, // Smoothly ties animation to scroll
+          }
+        }
+      );
+
+      // 2. Scroll-based reveal for the bottom info grid
+      gsap.from(".reveal-scroll", {
+        y: 150,
         opacity: 0,
-        duration: 1.5,
-        ease: "expo.out",
         stagger: 0.1,
+        ease: "none",
         scrollTrigger: {
           trigger: footerRef.current,
-          start: "top 80%",
+          start: "top 20%", 
+          end: "bottom bottom",
+          scrub: 1,
         }
       });
+
+      // 3. Horizontal slide for the line decoration on scroll
+      gsap.fromTo(".footer-line", 
+        { scaleX: 0 },
+        { 
+          scaleX: 1,
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: "top 50%",
+            end: "bottom bottom",
+            scrub: 2,
+          }
+        }
+      );
     }, footerRef);
 
     return () => ctx.revert();
   }, []);
 
-  // Framer Motion Variants for the "Wave"
+  // Framer Motion Hover Variants (kept as requested)
   const containerVariants = {
     initial: {},
     hover: {
@@ -61,7 +98,7 @@ const Footer = () => {
       {/* Main CTA Section */}
       <div className="flex-grow flex items-center justify-center">
         <motion.a 
-          ref={magneticArea}
+          ref={bigTextRef}
           href="mailto:lorenzo@lannino.com" 
           variants={containerVariants}
           initial="initial"
@@ -69,7 +106,7 @@ const Footer = () => {
           className="group relative flex items-center gap-4 md:gap-10 cursor-pointer p-10"
         >
           <div className="flex overflow-hidden pb-[4em]">
-            <h2 className="reveal-up text-[10vw] font-light tracking-tighter leading-none flex lowercase">
+            <h2 className="text-[10vw] font-light tracking-tighter leading-none flex lowercase">
               {phrase.split("").map((char, index) => (
                 <motion.span 
                   key={index} 
@@ -82,7 +119,7 @@ const Footer = () => {
             </h2>
           </div>
           
-          <div className="reveal-up relative overflow-hidden pb-[1em]">
+          <div className="relative overflow-hidden pb-[1em]">
             <motion.div
               className="relative"
               whileHover={{ x: 5, y: -5 }}
@@ -95,21 +132,16 @@ const Footer = () => {
             </motion.div>
           </div>
 
-          {/* Underline Decoration */}
-          <motion.div 
-            className="absolute bottom-6 left-12 right-12 h-[1px] bg-[#964B00] origin-left"
-            initial={{ scaleX: 0, opacity: 0 }}
-            whileHover={{ scaleX: 1, opacity: 0.2 }}
-            transition={{ duration: 0.6, ease: "circOut" }}
-          />
+          {/* Underline Decoration - Now responds to Scroll via GSAP */}
+          <div className="footer-line absolute bottom-6 left-12 right-12 h-[1px] bg-[#964B00] origin-left opacity-20" />
         </motion.a>
       </div>
 
-      {/* Footer Info Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 w-full mt-24 items-end text-[10px] uppercase tracking-[0.3em] font-medium">
+      {/* Footer Info Section - All have .reveal-scroll class for GSAP scrub */}
+      <div ref={infoSectionRef} className="grid grid-cols-1 md:grid-cols-3 w-full mt-24 items-end text-[10px] uppercase tracking-[0.3em] font-medium">
         
         {/* Left: Socials */}
-        <div className="flex flex-col gap-4 reveal-up">
+        <div className="flex flex-col gap-4 reveal-scroll">
           <p className="opacity-40">Connect</p>
           <div className="flex gap-6 normal-case tracking-tight font-light text-base">
             {['LinkedIn', 'GitHub', 'Behance'].map((link) => (
@@ -124,7 +156,7 @@ const Footer = () => {
         </div>
 
         {/* Center: Branding */}
-        <div className="flex flex-col items-center text-center gap-2 reveal-up py-16 md:py-0">
+        <div className="flex flex-col items-center text-center gap-2 reveal-scroll py-16 md:py-0">
           <div className="h-[1px] w-12 bg-[#964B00] opacity-20 mb-4" />
           <p className="text-4xl font-light tracking-tighter normal-case">
             Lorenzo Lannino
@@ -133,7 +165,7 @@ const Footer = () => {
         </div>
 
         {/* Right: Contact */}
-        <div className="flex flex-col items-end gap-4 reveal-up text-right">
+        <div className="flex flex-col items-end gap-4 reveal-scroll text-right">
           <p className="opacity-40">Inquiries</p>
           <a href="mailto:lorenzo@lannino.com" className="normal-case tracking-tight font-light text-base group">
             lorenzo@lannino.com
