@@ -50,12 +50,10 @@ const SideMenuContent = ({ onClose }) => {
 
   const menuItems = [
     { label: 'Home', path: '/' },
-    { label: 'Product', path: '/product' },
-    { label: 'Solutions', path: '/solutions' },
-    { label: 'Pricing', path: '/pricing' },
-    { label: 'Docs', path: '/docs' },
     { label: 'About', path: '/about' },
-    { label: 'Sign in', path: '/signin' },
+    { label: 'Community', path: '/community' },
+    { label: 'Pricing', path: '/pricing' },
+    { label: 'Sign in', path: '/login' },
   ];
 
   const containerVariants = {

@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from '@studio-freight/lenis';
 import { motion, useInView } from 'framer-motion';
+import Footer from '../components/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -240,6 +241,8 @@ const About = () => {
       <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-[100] mix-blend-multiply" 
            style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }} 
       />
+
+      <Footer />
     </div>
   );
 };

@@ -2,9 +2,12 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout'; // Import the new layout
 import HomePage from '../components/Home/pages/HomePage'; // Import the HomePage component
-import Product from '../components/Home/pages/Product';
 import About from '../components/Home/pages/About';
-import WorkDetail from '../components/Home/pages/WorkDetail';
+import LoginPage from '../components/auth/LoginPage';
+import Community from '../components/Home/pages/Community';
+import Pricing from '../components/Home/pages/Pricing';
+import AppShell from '../components/Shells/AppShell'
+
 
 
 
@@ -14,9 +17,11 @@ const router = createBrowserRouter([
     element: <MainLayout />, // Use the layout component here
     children: [
       { path: "/", element: <HomePage /> },
-      { path: "/product", element: <Product /> },
+      { path: "/community", element: <Community /> },
       { path: "/about", element: <About /> },
-      { path: "/work/:id", element: <WorkDetail /> },
+      { path: "/pricing", element: <Pricing /> },
+      { path: "/login", element: <LoginPage /> },
+       { path: "/shell", element: <AppShell /> },
     ],
   },
 ]);
