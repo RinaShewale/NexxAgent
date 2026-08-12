@@ -69,8 +69,8 @@ const About = () => {
       const cards = gsap.utils.toArray(".project-card");
       cards.forEach((card) => {
         const img = card.querySelector("img");
-        
-        gsap.fromTo(card.querySelector(".img-mask"), 
+
+        gsap.fromTo(card.querySelector(".img-mask"),
           { clipPath: "inset(100% 0% 0% 0%)" },
           {
             clipPath: "inset(0% 0% 0% 0%)",
@@ -85,7 +85,7 @@ const About = () => {
           }
         );
 
-        gsap.fromTo(img, 
+        gsap.fromTo(img,
           { x: -40, scale: 1.1 },
           {
             x: 40,
@@ -100,7 +100,7 @@ const About = () => {
         );
       });
 
-      gsap.fromTo(".outro-fill", 
+      gsap.fromTo(".outro-fill",
         { clipPath: "inset(0% 100% 0% 0%)" },
         {
           clipPath: "inset(0% 0% 0% 0%)",
@@ -121,10 +121,10 @@ const About = () => {
 
   return (
     <div ref={containerRef} className="bg-[#FDF3E4] text-[#A35100] font-sans selection:bg-[#A35100] selection:text-[#FDF3E4] antialiased">
-      
+
       {/* HERO SECTION */}
       <section className="h-[120vh] flex flex-col justify-center items-center relative px-6">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
@@ -133,16 +133,16 @@ const About = () => {
             Est. 2025 — Digital Architecture
           </span>
           <div className="overflow-hidden">
-            <motion.h1 
+            <motion.h1
               initial={{ y: "100%", rotate: 2 }}
               animate={{ y: 0, rotate: 0 }}
               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[16vw] md:text-[12rem] font-light leading-[0.85] uppercase italic font-serif"
+              className="text-7xl md:text-9xl font-serif italic tracking-tighter mb-8"
             >
               About
             </motion.h1>
           </div>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
             transition={{ delay: 1, duration: 1 }}
@@ -152,7 +152,7 @@ const About = () => {
           </motion.p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
           className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-30 text-[10px] tracking-widest uppercase"
@@ -164,10 +164,10 @@ const About = () => {
       {/* HORIZONTAL GALLERY */}
       <div ref={horizontalSectionRef} className="h-screen overflow-hidden bg-[#F9EFE0]/50">
         <div ref={horizontalContentRef} className="flex items-center h-full px-[15vw] gap-[10vw] w-max">
-          
+
           <div className="w-[350px] flex-shrink-0">
             <span className="text-[10px] uppercase tracking-[0.3em] mb-4 block opacity-50 font-bold">Philosophy</span>
-            <h2 className="text-6xl font-serif italic mb-8 leading-[1.1]">The art of <br/>omission.</h2>
+            <h2 className="text-6xl font-serif italic mb-8 leading-[1.1]">The art of <br />omission.</h2>
             <p className="text-sm opacity-70 leading-loose max-w-xs">We believe that what is left out is just as important as what is kept in.</p>
           </div>
 
@@ -175,10 +175,10 @@ const About = () => {
             <div key={i} className="project-card w-[350px] flex-shrink-0 group cursor-crosshair">
               {/* Changed aspect-square and simplified width */}
               <div className="img-mask relative aspect-square overflow-hidden bg-[#EBE0CF]">
-                <img 
-                  src={proj.img} 
-                  alt={proj.title} 
-                  className="w-[140%] h-full max-w-none object-cover grayscale-[0.8] group-hover:grayscale-0 transition-all duration-700" 
+                <img
+                  src={proj.img}
+                  alt={proj.title}
+                  className="w-[140%] h-full max-w-none object-cover grayscale-[0.8] group-hover:grayscale-0 transition-all duration-700"
                 />
                 <div className="absolute top-6 left-6 text-white mix-blend-difference font-serif italic text-xl">
                   {proj.id}
@@ -192,12 +192,15 @@ const About = () => {
             </div>
           ))}
 
-          {/* COLOR FILL OUTRO - Reduced text size to 12vw */}
+          {/* COLOR FILL OUTRO - Fixed descender clipping */}
           <div className="outro-wrapper relative flex-shrink-0 pr-[20vw] flex items-center">
-            <h2 className="text-[12vw] font-serif italic opacity-5 leading-none select-none whitespace-nowrap tracking-tighter">
+            {/* Background Text */}
+            <h2 className="text-[12vw] font-serif italic opacity-5 leading-[1.2] py-10 select-none whitespace-nowrap tracking-tighter">
               NexAgent
             </h2>
-            <h2 className="outro-fill absolute left-0 top-1/2 -translate-y-1/2 text-[12vw] font-serif italic text-[#A35100] leading-none select-none whitespace-nowrap tracking-tighter overflow-hidden">
+
+            {/* Foreground (Filled) Text */}
+            <h2 className="outro-fill absolute left-0 top-1/2 -translate-y-1/2 text-[12vw] font-serif italic text-[#A35100] leading-[1.2] py-10 select-none whitespace-nowrap tracking-tighter">
               NexAgent
             </h2>
           </div>
@@ -207,21 +210,21 @@ const About = () => {
       {/* CONCLUSION SECTION */}
       <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
         <div className="max-w-5xl z-10">
-          <motion.span 
-            initial={{ opacity: 0 }} 
-            whileInView={{ opacity: 0.4 }} 
+          <motion.span
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 0.4 }}
             className="text-[10px] uppercase tracking-[1em] mb-20 block italic font-serif"
           >
             Conclusion
           </motion.span>
-          
+
           <div className="space-y-4">
             <RevealText text="The future of design is" className="text-5xl md:text-8xl font-light tracking-tighter" />
             <RevealText text="not visible; it is felt." className="text-5xl md:text-8xl font-serif italic tracking-tighter" delay={0.4} />
           </div>
 
           <div className="mt-24">
-            <motion.button 
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="group relative text-[11px] font-bold uppercase tracking-[0.5em] px-12 py-6 overflow-hidden transition-all border border-[#A35100]/20"
@@ -238,8 +241,8 @@ const About = () => {
       </section>
 
       {/* Grain Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-[100] mix-blend-multiply" 
-           style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }} 
+      <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-[100] mix-blend-multiply"
+        style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }}
       />
 
       <Footer />

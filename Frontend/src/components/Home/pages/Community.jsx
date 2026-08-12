@@ -75,19 +75,19 @@ const Community = () => {
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-    function raf(time) { 
-      lenis.raf(time); 
-      requestAnimationFrame(raf); 
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
     }
     requestAnimationFrame(raf);
 
     const items = gsap.utils.toArray(".grid-item");
     items.forEach((item) => {
-      gsap.fromTo(item, 
+      gsap.fromTo(item,
         { y: 60, opacity: 0 },
-        { 
-          y: 0, 
-          opacity: 1, 
+        {
+          y: 0,
+          opacity: 1,
           scrollTrigger: {
             trigger: item,
             start: "top bottom-=50",
@@ -103,11 +103,11 @@ const Community = () => {
 
   return (
     <div ref={containerRef} className="bg-[#FDF3E4] text-[#A35100] font-sans selection:bg-[#A35100] selection:text-[#FDF3E4] antialiased">
-      
+
       {/* HERO */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-20 pt-40">
+      <section className="min-h-screen flex flex-col justify-center items-center px-6 md:px-20 pt-40 text-center">
         <div className="max-w-7xl mx-auto w-full">
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
             transition={{ duration: 1 }}
@@ -115,37 +115,29 @@ const Community = () => {
           >
             The Collective Consciousness
           </motion.span>
-          
-          <h1 className="text-[14vw] md:text-[11rem] font-serif italic leading-[0.75] mb-16 tracking-tighter overflow-hidden">
-            <motion.span 
+
+          {/* Heading on one line */}
+          <h1 className="text-[12vw] md:text-9xl font-serif italic tracking-tighter mb-8 leading-none overflow-hidden whitespace-nowrap">
+            <motion.span
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
               className="inline-block"
             >
-              Nexus
-            </motion.span> 
-            <br/> 
-            <motion.span 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="ml-[10vw] inline-block"
-            >
-              Circle.
+              Nexus Circle.
             </motion.span>
           </h1>
 
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 border-t border-[#A35100]/10 pt-8">
-            <div className="max-w-md">
-                <RevealText className="text-2xl font-light leading-snug">
-                  A curated ecosystem of thinkers, builders, and digital architects shaping the next epoch of interaction.
-                </RevealText>
+          <div className="flex flex-col items-center gap-12 border-t border-[#A35100]/10 pt-12 mt-12">
+            <div className="max-w-xl">
+              <RevealText className="text-2xl font-light leading-snug justify-center">
+                A curated ecosystem of thinkers, builders, and digital architects shaping the next epoch of interaction.
+              </RevealText>
             </div>
-            <div className="flex gap-12">
+            <div className="flex gap-8 md:gap-16">
               {STATS.map((stat, i) => (
-                <div key={i} className="text-left md:text-right">
-                  <div className="text-4xl font-serif italic">{stat.value}</div>
+                <div key={i} className="text-center">
+                  <div className="text-3xl md:text-4xl font-serif italic">{stat.value}</div>
                   <div className="text-[10px] uppercase tracking-[0.2em] opacity-60 font-bold">{stat.label}</div>
                 </div>
               ))}
@@ -154,17 +146,15 @@ const Community = () => {
         </div>
       </section>
 
-   
-
       {/* FLOATING GRID */}
       <section className="py-40 px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
           {MEMBERS.map((member, index) => (
-            <div 
-              key={member.id} 
+            <div
+              key={member.id}
               className={`grid-item bg-[#EBE0CF] aspect-[3/4] relative overflow-hidden group cursor-pointer ${index % 2 === 1 ? 'md:mt-24' : ''}`}
             >
-              <img 
+              <img
                 src={member.image}
                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100"
                 alt={member.role}
@@ -181,27 +171,26 @@ const Community = () => {
 
       {/* MANIFESTO */}
       <section className="py-60 bg-[#A35100] text-[#FDF3E4] relative overflow-hidden">
-        {/* Subtle background text decorative element */}
         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-            <span className="text-[23vw] font-serif italic whitespace-nowrap">Collective</span>
+          <span className="text-[23vw] font-serif italic whitespace-nowrap">Collective</span>
         </div>
-        
+
         <div className="max-w-5xl mx-auto text-center px-6 relative z-10">
           <RevealText className="text-5xl md:text-7xl font-serif italic mb-16 justify-center text-center leading-[1.1]">
             "Individual intelligence is a spark; collective intelligence is the sun."
           </RevealText>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <motion.button 
-                whileHover={{ scale: 1.02, backgroundColor: "#FDF3E4", color: "#A35100" }}
-                whileTap={{ scale: 0.98 }}
-                className="px-16 py-6 border border-[#FDF3E4]/40 text-[11px] tracking-[0.5em] uppercase transition-colors duration-500 font-bold"
+            <motion.button
+              whileHover={{ scale: 1.02, backgroundColor: "#FDF3E4", color: "#A35100" }}
+              whileTap={{ scale: 0.98 }}
+              className="px-16 py-6 border border-[#FDF3E4]/40 text-[11px] tracking-[0.5em] uppercase transition-colors duration-500 font-bold"
             >
-                Apply for Membership
+              Apply for Membership
             </motion.button>
           </motion.div>
         </div>

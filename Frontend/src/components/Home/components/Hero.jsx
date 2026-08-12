@@ -54,7 +54,7 @@ const Hero = () => {
 
           <div className="name-left relative -translate-y-[-1.2vw] mr-[2vw] ">
              <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] lowercase">
-               orianno
+           etadicu    
             </h1>
           </div>
 
@@ -67,7 +67,7 @@ const Hero = () => {
 
           <div className="name-right -translate-y-[6vw] ml-[2vw]">
              <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] lowercase">
-              orenzo
+             uminous
             </h1>
           </div>
 

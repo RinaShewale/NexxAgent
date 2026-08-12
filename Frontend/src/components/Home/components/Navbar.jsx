@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, usePresence } from 'framer-motion';
+import { motion, AnimatePresence, usePresence, useScroll, useMotionValueEvent } from 'framer-motion'; // Added useScroll, useMotionValueEvent
 import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 
@@ -140,25 +140,83 @@ const SideMenu = ({ isOpen, onClose }) => (
 );
 
 const Navbar = () => {
-  const [lang, setLang] = useState('IT');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  
+  const { scrollY } = useScroll();
+
+  /**
+   * Detect Scroll Direction
+   * If scroll direction is down and passed a threshold (150px), hide navbar.
+   * If scroll direction is up, show navbar.
+   */
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious();
+    if (latest > previous && latest > 150) {
+      setIsHidden(true);
+    } else {
+      setIsHidden(false);
+    }
+  });
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full p-8 md:p-12 flex justify-end items-start z-[100] pointer-events-none">
-        <div className="flex items-center gap-8 pointer-events-auto">
-          <button 
-            onClick={() => setLang(l => l === 'IT' ? 'EN' : 'IT')}
-            className="text-[#B55500] font-light text-[10px] tracking-widest hover:opacity-50 transition-opacity"
-          >
-            {lang}
-          </button>
-          <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-1.5 cursor-pointer h-8 group">
-            <motion.div className="w-[1px] bg-[#B55500]" animate={{ height: isMenuOpen ? 0 : 20 }} whileHover={{ height: 12 }} />
-            <motion.div className="w-[1px] bg-[#B55500]" animate={{ height: isMenuOpen ? 0 : 28 }} whileHover={{ height: 36 }} />
-          </button>
+      {/* 
+          1. Changed nav to motion.nav 
+          2. Added animate prop to handle hiding/showing based on isHidden 
+          3. transition prop handles the smoothness of the slide
+      */}
+      <motion.nav 
+        variants={{
+          visible: { y: 0 },
+          hidden: { y: "-100%" },
+        }}
+        animate={isHidden ? "hidden" : "visible"}
+        transition={{ duration: 0.35, ease: "easeInOut" }}
+        className="fixed top-0 left-0 w-full p-8 md:p-12 flex justify-between items-start z-[100] pointer-events-none"
+      >
+        
+        {/* LOGO REVEAL */}
+        <div className="overflow-hidden pointer-events-auto">
+          <Link to="/">
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="whitespace-nowrap"
+            >
+              <span className="text-xl md:text-2xl font-medium tracking-tighter text-[#B55500]">
+                NexAgent
+              </span>
+            </motion.div>
+          </Link>
         </div>
-      </nav>
+
+        {/* MENU BUTTON */}
+        <div className="flex items-center gap-8 pointer-events-auto overflow-hidden">
+          <motion.div
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          >
+            <button 
+              onClick={() => setIsMenuOpen(true)} 
+              className="flex items-center gap-1.5 cursor-pointer h-8 group"
+            >
+              <motion.div 
+                className="w-[1px] bg-[#B55500]" 
+                animate={{ height: isMenuOpen ? 0 : 20 }} 
+                whileHover={{ height: 12 }} 
+              />
+              <motion.div 
+                className="w-[1px] bg-[#B55500]" 
+                animate={{ height: isMenuOpen ? 0 : 28 }} 
+                whileHover={{ height: 36 }} 
+              />
+            </button>
+          </motion.div>
+        </div>
+      </motion.nav>
       <SideMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   );
