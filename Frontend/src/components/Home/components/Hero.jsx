@@ -6,13 +6,15 @@ const Hero = () => {
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
+      // Create timeline
       const tl = gsap.timeline({ delay: 0.5 });
 
-      // FIX: Immediately make the container visible once GSAP loads
-      gsap.set(container.current, { opacity: 1 });
-
+      // FIX: Move visibility into the timeline so it respects the 0.5s delay
+      // autoAlpha handles both opacity and visibility to prevent any flickering
+      tl.set(container.current, { autoAlpha: 1 })
+      
       // 1. Vertical spine grows from center
-      tl.fromTo(".l-stem", 
+      .fromTo(".l-stem", 
         { scaleY: 0 }, 
         { scaleY: 1, transformOrigin: "center", duration: 1.5, ease: "expo.inOut" }
       )
@@ -38,13 +40,14 @@ const Hero = () => {
   return (
     <section 
       ref={container} 
-      // FIX: Start with opacity 0 to prevent the glitch
       className="relative w-full h-screen flex items-center justify-center overflow-hidden select-none"
       style={{ 
         backgroundColor: bgColor, 
         color: themeColor, 
         fontFamily: "'Inter', sans-serif",
-        opacity: 0 
+        // FIX: Start hidden via visibility and opacity
+        opacity: 0,
+        visibility: 'hidden' 
       }}
     >
       <div className="relative w-full max-w-[1400px] h-full flex items-center justify-center">
@@ -52,7 +55,7 @@ const Hero = () => {
         {/* 1. CENTRAL VERTICAL STEM */}
         <div 
           className="l-stem absolute left-1/2 -translate-x-1/2 w-[6px] h-[37vh] bg-[#A35100]" 
-          style={{ transform: 'scaleY(0)' }} // FIX: Hardcode scale to 0
+          style={{ transform: 'scaleY(0)' }} 
         />
 
         {/* --- LEFT SIDE --- */}
@@ -70,7 +73,7 @@ const Hero = () => {
 
           <div 
             className="stroke-left absolute bottom-[-3vw] right-[-5px] w-[4vw] h-[7px] bg-[#A35100] origin-right" 
-            style={{ transform: 'scaleX(0)' }} // FIX: Hardcode scale to 0
+            style={{ transform: 'scaleX(0)' }} 
           />
         </div>
 
@@ -78,7 +81,7 @@ const Hero = () => {
         <div className="absolute left-[50%] flex flex-col items-start ml-[5px]">
           <div 
             className="stroke-right absolute top-[4vw] left-[-8px] w-[4vw] h-[7px] bg-[#A35100] origin-left z-10" 
-            style={{ transform: 'scaleX(0)' }} // FIX: Hardcode scale to 0
+            style={{ transform: 'scaleX(0)' }} 
           />
 
           <div className="name-right -translate-y-[6vw] ml-[2vw]" style={{ opacity: 0 }}>

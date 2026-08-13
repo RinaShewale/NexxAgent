@@ -1,14 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Zap, PanelLeft, Globe } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
-// Logic Hooks
+import { PanelLeft, Monitor, Code2, Terminal as TermIcon, Zap, Globe, ExternalLink } from 'lucide-react';
 import useSandboxStore from '../../store/sandboxStore';
 import { useFileEditor } from '../../hooks/useFileEditor';
-import { useFileTree } from '../../hooks/useFileTree';
-
-// Nexus Components
 import AIChat from '../ai/AIChat';
 import FileExplorer from '../explorer/FileExplorer';
 import EditorPanel from '../editor/EditorPanel';
@@ -17,221 +11,113 @@ import TerminalPanel from '../terminal/TerminalPanel';
 import GeneratingPage from './GeneratingPage';
 
 export default function AppShell() {
-  const navigate = useNavigate();
-  const { sandboxID, agentUrl, previewUrl, viewState, reset } = useSandboxStore();
-  
-  // Data Fetching & State Management
-  const { refresh: refreshTree } = useFileTree(agentUrl);
-  const { 
-    openFiles, activeFile, activeFileData, loading, saveStatus, 
-    openFile, closeFile, updateContent, saveFile, setActiveFile 
-  } = useFileEditor(agentUrl);
+  const { sandboxID, agentUrl, previewUrl, viewState } = useSandboxStore();
+  const { openFiles, activeFile, activeFileData, openFile, closeFile, updateContent, saveFile, setActiveFile, saveStatus } = useFileEditor(agentUrl);
 
-  const [activeRightTab, setActiveRightTab] = useState('preview');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [bottomHeight, setBottomHeight] = useState(240);
-  const isDraggingRef = useRef(false);
-
-  const handleReset = () => {
-    reset();
-    navigate('/dashboard');
-  };
-
-  const handleFilesChanged = useCallback(() => refreshTree(), [refreshTree]);
-
-  // Handle Terminal Resizing
-  const handleMouseMove = useCallback((e) => {
-    if (!isDraggingRef.current) return;
-    const h = window.innerHeight - e.clientY;
-    setBottomHeight(Math.max(120, Math.min(h, window.innerHeight * 0.6)));
-  }, []);
-
-  const stopDragging = useCallback(() => {
-    isDraggingRef.current = false;
-    document.body.style.cursor = 'default';
-  }, []);
-
-  useEffect(() => {
-    if (agentUrl && viewState === 'editor') refreshTree();
-  }, [agentUrl, viewState, refreshTree]);
-
-  // If generation failed (or the store was never set), viewState falls
-  // back to 'landing'. Without this, a failed generate leaves the user
-  // stuck on a blank /shell route since nothing here renders for 'landing'.
-  useEffect(() => {
-    if (viewState === 'landing') {
-      navigate('/dashboard');
-    }
-  }, [viewState, navigate]);
-
-  const theme = {
-    bg: "#FDF3E4",
-    surface: "#EBE0CF",
-    accent: "#A35100",
-    text: "#34170A",
-    border: "rgba(163, 81, 0, 0.1)"
-  };
+  const [activeTab, setActiveTab] = useState('preview'); // preview | code | terminal
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   if (viewState === 'generating') return <GeneratingPage />;
-
-  // Guard against rendering the editor shell before we actually
-  // have a sandbox to point it at (e.g. brief tick between
-  // 'landing' state and the redirect effect above firing).
   if (viewState !== 'editor') return null;
 
+  const views = [
+    { id: 'preview', label: 'Preview', icon: <Monitor size={16} /> },
+    { id: 'code', label: 'Architect', icon: <Code2 size={16} /> },
+    { id: 'terminal', label: 'Console', icon: <TermIcon size={16} /> }
+  ];
+
   return (
-    <div
-      className="h-screen w-screen flex flex-col overflow-hidden antialiased select-none"
-      onMouseMove={handleMouseMove}
-      onMouseUp={stopDragging}
-      style={{ backgroundColor: theme.bg, color: theme.text, fontFamily: 'Inter, sans-serif' }}
-    >
+    <div className="h-screen w-screen flex bg-[#FDF3E4] text-[#34170A] overflow-hidden selection:bg-[#A35100]/20">
       
-      {/* ── HEADER ── */}
-      <header className="flex items-center justify-between px-8 h-20 border-b relative z-50 bg-[#FDF3E4]" style={{ borderColor: theme.border }}>
-        <div className="flex items-center gap-12">
-          <button onClick={handleReset} className="group flex items-center gap-3">
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[10px] uppercase tracking-[0.3em] font-black">Return</span>
-          </button>
+      {/* ── LEFT SIDEBAR (AI DIALOGUE) ── */}
+      <motion.aside 
+        initial={false}
+        animate={{ width: sidebarOpen ? 400 : 0, opacity: sidebarOpen ? 1 : 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="h-full border-r border-[#A35100]/10 bg-[#F7EDE0]/50 backdrop-blur-xl relative z-30 overflow-hidden"
+      >
+        <div className="w-[400px] h-full">
+          <AIChat sandboxID={sandboxID} />
+        </div>
+      </motion.aside>
 
+      {/* ── MAIN WORKSPACE ── */}
+      <main className="flex-1 relative flex flex-col p-4 md:p-6 overflow-hidden">
+        
+        {/* Workspace Top Rail */}
+        <div className="flex items-center justify-between mb-4 px-2">
           <div className="flex items-center gap-4">
-            <div className="w-px h-8 bg-[#A35100]/20" />
-            <div className="flex flex-col">
-              <h1 className="text-2xl font-serif italic leading-none">Nexus Studio.</h1>
-              <span className="text-[9px] uppercase tracking-[0.2em] font-black opacity-40">Creative Engine v4.0</span>
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-3 bg-white border border-[#A35100]/10 rounded-2xl text-[#A35100] hover:shadow-lg transition-all active:scale-95"
+            >
+              <PanelLeft size={20} strokeWidth={1.5} />
+            </button>
+            <div className="hidden lg:flex items-center gap-3 px-6 py-3 bg-[#F7EDE0] border border-[#A35100]/5 rounded-2xl text-[11px] font-medium opacity-60">
+              <Globe size={14} className="text-[#A35100]" />
+              <span className="truncate max-w-[200px] font-mono">{previewUrl || 'nexus-instance-v1.local'}</span>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-8">
-          <div className="hidden md:flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#A35100]" />
-            <span className="text-[10px] uppercase tracking-widest font-black opacity-40">Node Synced</span>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-4 px-10 py-3.5 text-[10px] font-black uppercase tracking-[0.3em] text-[#FDF3E4] bg-[#A35100] rounded-full shadow-xl shadow-[#A35100]/10"
-          >
+          <button className="group flex items-center gap-3 px-8 py-3 bg-[#A35100] text-[#FDF3E4] rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl shadow-[#A35100]/20 hover:bg-[#854200] transition-all active:scale-95">
             <Zap size={14} fill="currentColor" />
-            Deploy
-          </motion.button>
+            Deploy Vision
+          </button>
         </div>
-      </header>
 
-      {/* ── BODY ── */}
-      <main className="flex-1 flex overflow-hidden">
+        {/* The "Canvas" */}
+        <div className="flex-1 relative bg-white rounded-[2.5rem] border border-[#A35100]/10 shadow-[0_40px_100px_-30px_rgba(163,81,0,0.12)] overflow-hidden flex flex-col">
+          <AnimatePresence mode="wait">
+            {activeTab === 'preview' && (
+              <motion.div key="p" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="flex-1 h-full">
+                <PreviewPanel previewUrl={previewUrl} />
+              </motion.div>
+            )}
+            
+            {activeTab === 'code' && (
+              <motion.div key="c" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="flex-1 flex h-full overflow-hidden">
+                <div className="w-64 border-r border-[#A35100]/5 bg-[#FDF3E4]/20 hidden md:block">
+                  <FileExplorer agentUrl={agentUrl} onFileClick={openFile} />
+                </div>
+                <div className="flex-1 flex flex-col min-w-0">
+                  <EditorPanel 
+                    openFiles={openFiles} activeFile={activeFile} 
+                    activeFileData={activeFileData} onSelect={setActiveFile} 
+                    onClose={closeFile} onContentChange={updateContent}
+                    onSave={saveFile} saveStatus={saveStatus}
+                  />
+                </div>
+              </motion.div>
+            )}
 
-        {/* LEFT: AI AGENT DIALOGUE */}
-        <motion.div
-          initial={false}
-          animate={{ width: isSidebarOpen ? 420 : 0 }}
-          style={{ backgroundColor: theme.surface }}
-          className="border-r border-[#A35100]/10 flex flex-col overflow-hidden shrink-0 relative z-30"
-        >
-          <AIChat sandboxID={sandboxID} onFilesChanged={handleFilesChanged} />
-        </motion.div>
+            {activeTab === 'terminal' && (
+              <motion.div key="t" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 h-full bg-[#1A0B05]">
+                <TerminalPanel agentUrl={agentUrl} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        {/* RIGHT: WORKSPACE AREA */}
-        <div className="flex-1 flex flex-col min-w-0 bg-white/40">
-
-          {/* TAB STRIP */}
-          <div className="flex items-center justify-between px-8 h-16 border-b bg-[#FDF3E4]" style={{ borderColor: theme.border }}>
-            <div className="flex items-center gap-10">
+        {/* ── FLOATING VIEW DOCK ── */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-1 p-1.5 bg-[#34170A]/90 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl">
+            {views.map((v) => (
               <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`transition-colors ${isSidebarOpen ? 'text-[#A35100]' : 'text-[#A35100]/30'}`}
+                key={v.id}
+                onClick={() => setActiveTab(v.id)}
+                className={`flex items-center gap-3 px-6 py-3 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
+                  activeTab === v.id 
+                  ? 'bg-[#A35100] text-white shadow-lg' 
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                }`}
               >
-                <PanelLeft size={20} />
+                {v.icon}
+                <span className={activeTab === v.id ? 'block' : 'hidden'}>{v.label}</span>
               </button>
-
-              <nav className="flex gap-12">
-                {['preview', 'code'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveRightTab(tab)}
-                    className={`relative text-[10px] font-black uppercase tracking-[0.4em] transition-all ${
-                      activeRightTab === tab ? 'text-[#A35100]' : 'text-[#A35100]/30 hover:text-[#A35100]/60'
-                    }`}
-                  >
-                    {tab}
-                    {activeRightTab === tab && (
-                      <motion.div layoutId="tabMarker" className="absolute -bottom-[22px] left-0 right-0 h-0.5 bg-[#A35100]" />
-                    )}
-                  </button>
-                ))}
-              </nav>
-            </div>
-
-            <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.3em] opacity-30">
-              <Globe size={14} />
-              <span>{previewUrl || 'nexus-local:3000'}</span>
-            </div>
-          </div>
-
-          {/* CONTENT VIEWPORT */}
-          <div className="flex-1 flex overflow-hidden relative p-4">
-            <div className="flex-1 rounded-[32px] overflow-hidden border border-[#A35100]/10 bg-white shadow-2xl shadow-[#A35100]/5 flex flex-col">
-              
-              <AnimatePresence mode="wait">
-                {activeRightTab === 'preview' ? (
-                  <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 h-full">
-                    <PreviewPanel previewUrl={previewUrl} />
-                  </motion.div>
-                ) : (
-                  <motion.div key="code" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col h-full overflow-hidden">
-                    <div className="flex-1 flex overflow-hidden">
-                      {/* Sub-Sidebar: File Explorer */}
-                      <div className="w-72 border-r border-[#A35100]/5 h-full">
-                        <FileExplorer agentUrl={agentUrl} onFileClick={openFile} />
-                      </div>
-                      
-                      {/* Code Editor */}
-                      <div className="flex-1 h-full overflow-hidden">
-                        <EditorPanel
-                          openFiles={openFiles} 
-                          activeFile={activeFile} 
-                          activeFileData={activeFileData}
-                          loading={loading} 
-                          saveStatus={saveStatus} 
-                          onSelect={setActiveFile}
-                          onClose={closeFile} 
-                          onSave={saveFile} 
-                          onContentChange={updateContent}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Resize Gutter (Horizontal) */}
-                    <div 
-                      className="h-[2px] bg-[#A35100]/5 hover:bg-[#A35100]/40 cursor-row-resize transition-all z-40"
-                      onMouseDown={(e) => {
-                        isDraggingRef.current = true;
-                        document.body.style.cursor = 'row-resize';
-                      }}
-                    />
-
-                    {/* Bottom Console: Terminal */}
-                    <div style={{ height: bottomHeight }} className="shrink-0">
-                      <TerminalPanel agentUrl={agentUrl} />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            ))}
           </div>
         </div>
       </main>
-
-      {/* Global CSS for buttery scrolling */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(163, 81, 0, 0.1); border-radius: 20px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(163, 81, 0, 0.3); }
-      `}} />
     </div>
   );
 }

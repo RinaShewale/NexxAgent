@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import useSandboxStore from '../../store/sandboxStore';
 import { useSandbox } from '../../hooks/useSandbox';
-
+import { ArrowRight, Terminal } from 'lucide-react';
 
 export default function LandingPage() {
   const { error, setError, setInitialPrompt } = useSandboxStore();
@@ -15,112 +15,122 @@ export default function LandingPage() {
     if (!prompt.trim()) return;
     setError(null);
     setInitialPrompt(prompt);
-
-    // Fire-and-forget: triggerStartSandbox synchronously sets
-    // status:'loading' + viewState:'generating' before its first
-    // `await`, so the store is already correct by the time we navigate.
     triggerStartSandbox(prompt);
-
     navigate('/shell');
   };
 
-  return (
-    <div className="relative min-h-screen w-full bg-[#1A0B05] text-[#FFF2E0] font-sans selection:bg-[#B55500]/30 overflow-x-hidden">
-    
-  
+  const suggestions = ["SaaS Dashboard", "AI Portfolio", "Crypto Tracker"];
 
-      {/* 2. Ambient Background Elements (Matching the SideMenu aesthetic) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Top Right Glow */}
-        <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-[#B55500]/10 blur-[120px] rounded-full" />
-        {/* Bottom Left Glow */}
-        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-[#34170A]/50 blur-[100px] rounded-full" />
-        
-        {/* Subtle Geometric SVG (Optional, matches the curve of your menu) */}
-        <svg className="absolute top-0 right-0 h-full w-auto opacity-[0.03] text-[#B55500]" viewBox="0 0 100 100" preserveAspectRatio="none">
-           <path d="M 100 0 L 100 100 L 20 100 Q 0 50 20 0 Z" fill="currentColor" />
-        </svg>
+  return (
+    <div className="relative min-h-screen w-full bg-[#FDF3E4] text-[#34170A] font-sans selection:bg-[#A35100]/20 overflow-hidden flex flex-col items-center justify-center">
+      
+      {/* Background Texture */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div 
+          className="absolute inset-0 opacity-[0.05] mix-blend-multiply"
+          style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }}
+        />
+        <div className="absolute top-[-10%] right-[-5%] w-[60vw] h-[60vw] bg-[#A35100]/5 rounded-full blur-[140px]" />
       </div>
 
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
-        <div className="w-full max-w-4xl mx-auto text-center">
+      <main className="relative z-10 w-full max-w-5xl px-6">
+        <div className="text-center">
           
-          {/* Hero Content */}
+          {/* Headline Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8 }}
           >
-            <span className="text-[10px] tracking-[0.5em] uppercase text-[#B55500] font-bold mb-4 block">
-              The Future of Autonomous Agents
-            </span>
-            <h1 className="text-5xl md:text-7xl font-light tracking-tighter mb-8 leading-[0.9]">
+            <h1 className="text-7xl md:text-[120px] font-light tracking-tighter mb-4 leading-[0.85] text-[#34170A]">
               Build your vision <br />
-              <span className="italic font-serif">in seconds.</span>
+              <span className="italic font-serif font-light text-[#A35100]">in seconds.</span>
             </h1>
+            
+            <p className="max-w-xl mx-auto text-[#34170A]/50 text-lg md:text-xl font-light mb-12 mt-6">
+              Deploy high-performance applications and autonomous workflows <br className="hidden md:block" />
+              with simple natural language.
+            </p>
           </motion.div>
 
-          {/* Prompt Input Box */}
+          {/* Main Input Container */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative group max-w-2xl mx-auto w-full"
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative max-w-3xl mx-auto w-full"
           >
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#B55500]/20 to-transparent rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-1000" />
-            
-            <div className="relative flex flex-col md:flex-row items-center gap-3 p-2 bg-[#34170A]/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl">
+            <div className="relative flex items-center p-2 bg-[#F7EDE0]/60 backdrop-blur-xl border border-[#A35100]/10 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(163,81,0,0.15)]">
+              
+              {/* Icon Decoration */}
+              <div className="pl-5 pr-2 text-[#A35100]/30">
+                <Terminal size={20} strokeWidth={1.5} />
+              </div>
+
+              {/* The Input - No Outline */}
               <input
                 type="text"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleStartGenerate();
-                }}
-                placeholder="Describe an application or task..."
-                className="w-full bg-transparent border-none outline-none px-4 py-3 text-[#FFF2E0] placeholder:text-[#FFF2E0]/20 text-lg font-light"
+                onKeyDown={(e) => e.key === 'Enter' && handleStartGenerate()}
+                placeholder="Describe the application you want to build..."
+                className="w-full bg-transparent border-none outline-none focus:ring-0 px-2 py-5 text-[#34170A] placeholder:text-[#34170A]/20 text-lg md:text-xl font-light"
               />
+
+              {/* Generate Button */}
               <button
                 onClick={handleStartGenerate}
-                className="w-full md:w-auto px-8 py-3 bg-[#B55500] hover:bg-[#944600] text-[#FFF2E0] rounded-xl transition-all duration-300 font-medium tracking-tight whitespace-nowrap active:scale-95"
+                className="group flex items-center gap-2 px-8 py-4 bg-[#A35100] hover:bg-[#854200] text-[#FDF3E4] rounded-2xl transition-all duration-300 font-medium whitespace-nowrap shadow-lg shadow-[#A35100]/20 active:scale-95"
               >
                 Generate
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
+
+            {/* Interactive Suggestions */}
+            <div className="flex flex-wrap justify-center gap-3 mt-8">
+              {suggestions.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setPrompt(item)}
+                  className="px-5 py-2 rounded-full border border-[#34170A]/5 bg-[#34170A]/5 text-[10px] uppercase tracking-[0.15em] font-bold text-[#34170A]/40 hover:bg-[#A35100]/10 hover:text-[#A35100] hover:border-[#A35100]/20 transition-all duration-300"
+                >
+                  + {item}
+                </button>
+              ))}
+            </div>
             
-            {error && (
-              <p className="mt-4 text-[#B55500] text-xs tracking-widest uppercase">{error}</p>
-            )}
+            {/* Error Message */}
+            <AnimatePresence>
+              {error && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0 }}
+                  className="mt-6 text-[#A35100] text-[10px] font-bold tracking-[0.2em] uppercase"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </motion.div>
 
-          {/* Subtle Footer Links */}
-          <motion.div 
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 0.4 }}
-             transition={{ delay: 0.8 }}
-             className="mt-20 flex gap-8 justify-center text-[10px] tracking-[0.3em] uppercase font-light"
-          >
-            <a href="#" className="hover:text-[#B55500] transition-colors">Documentation</a>
-            <a href="#" className="hover:text-[#B55500] transition-colors">Showcase</a>
-            <a href="#" className="hover:text-[#B55500] transition-colors">Github</a>
-          </motion.div>
         </div>
       </main>
 
-      {/* Custom Scrollbar Styling */}
+      {/* Styles for global cleanup */}
       <style jsx global>{`
-        ::-webkit-scrollbar {
-          width: 4px;
+        body {
+          background-color: #FDF3E4;
         }
-        ::-webkit-scrollbar-track {
-          background: #1A0B05;
+        /* Removes the blue/black highlight box on mobile/chrome */
+        input:focus {
+          outline: none !important;
+          box-shadow: none !important;
         }
-        ::-webkit-scrollbar-thumb {
-          background: #34170A;
-          border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: #B55500;
+        ::selection {
+          background: rgba(163, 81, 0, 0.15);
+          color: #A35100;
         }
       `}</style>
     </div>

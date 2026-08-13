@@ -15,7 +15,7 @@ export default function ChatInput({ onSend, disabled }) {
 
   return (
     <div className="w-full">
-      <div className="relative flex flex-col bg-[#FDF3E4] border border-[#A35100]/10 rounded-2xl shadow-lg focus-within:shadow-xl transition-all duration-500 overflow-hidden">
+      <div className="relative flex flex-col bg-[#fdf9f3] border border-[#A35100]/10 rounded-2xl shadow-lg focus-within:shadow-xl transition-all duration-500 overflow-hidden">
         <textarea
           ref={textareaRef}
           value={value}
@@ -59,3 +59,13 @@ export default function ChatInput({ onSend, disabled }) {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+

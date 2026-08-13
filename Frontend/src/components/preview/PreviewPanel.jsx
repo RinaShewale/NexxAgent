@@ -1,59 +1,43 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Monitor, Tablet, Smartphone, RotateCw, ExternalLink, Globe, Loader2 } from 'lucide-react';
 
 export default function PreviewPanel({ previewUrl }) {
   const [device, setDevice] = useState('desktop');
-  const [manualReloadKey, setManualReloadKey] = useState(0);
-  const iframeRef = useRef(null);
-  
   const widths = { desktop: '100%', tablet: '768px', mobile: '375px' };
 
-  useEffect(() => {
-    if (iframeRef.current && previewUrl) {
-      const current = iframeRef.current.src;
-      if (current !== previewUrl) iframeRef.current.src = previewUrl;
-    }
-  }, [previewUrl]);
-
   return (
-    <div className="flex-1 flex flex-col bg-[#EBE0CF] overflow-hidden font-sans">
-      {/* Nexus Toolbar */}
-      <div className="h-20 border-b border-[#A35100]/10 flex items-center justify-between px-8 bg-[#FDF3E4] z-20 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 p-1 bg-[#EBE0CF]/40 rounded-full border border-[#A35100]/5">
-            <DeviceButton active={device === 'desktop'} onClick={() => setDevice('desktop')} icon={<Monitor size={14} />} />
-            <DeviceButton active={device === 'tablet'} onClick={() => setDevice('tablet')} icon={<Tablet size={14} />} />
-            <DeviceButton active={device === 'mobile'} onClick={() => setDevice('mobile')} icon={<Smartphone size={14} />} />
-          </div>
-
-          <button onClick={() => setManualReloadKey(k => k + 1)} className="p-2 text-[#A35100]/40 hover:text-[#A35100] transition-colors">
-            <RotateCw size={16} />
-          </button>
+    <div className="flex flex-col h-full bg-[#EBE0CF]/40">
+      <div className="h-20 px-8 flex items-center justify-between bg-white/50 backdrop-blur border-b border-[#A35100]/10">
+        <div className="flex items-center gap-4 bg-[#FDF3E4] p-1 rounded-2xl border border-[#A35100]/10">
+          <DeviceBtn active={device === 'desktop'} onClick={() => setDevice('desktop')} icon={<Monitor size={14} />} />
+          <DeviceBtn active={device === 'tablet'} onClick={() => setDevice('tablet')} icon={<Tablet size={14} />} />
+          <DeviceBtn active={device === 'mobile'} onClick={() => setDevice('mobile')} icon={<Smartphone size={14} />} />
         </div>
 
-        {/* URL Bar */}
-        <div className="hidden md:flex items-center gap-4 px-6 py-2 bg-white border border-[#A35100]/10 rounded-full min-w-[300px]">
+        <div className="flex-1 max-w-md mx-8 flex items-center gap-3 px-6 py-2.5 bg-white border border-[#A35100]/10 rounded-full">
           <Globe size={12} className="text-[#A35100]/40" />
-          <span className="text-[10px] font-mono text-[#34170A] opacity-60 truncate">
-            {previewUrl || 'nexus-local:3000'}
-          </span>
-          <ExternalLink size={12} className="text-[#A35100]/20 ml-auto" />
+          <span className="flex-1 text-[10px] font-mono opacity-50 truncate">{previewUrl || 'connecting...'}</span>
+          <ExternalLink size={12} className="text-[#A35100]/20 cursor-pointer hover:text-[#A35100]" />
         </div>
+
+        <button className="p-3 hover:bg-[#A35100]/5 rounded-xl text-[#A35100]/40 transition-colors">
+          <RotateCw size={16} />
+        </button>
       </div>
 
-      {/* Preview Workspace */}
       <div className="flex-1 p-8 md:p-12 flex justify-center items-start overflow-auto custom-scrollbar">
-        <motion.div
+        <motion.div 
           animate={{ width: widths[device] }}
-          className="bg-white rounded-3xl h-full shadow-[0_40px_80px_-20px_rgba(163,81,0,0.15)] overflow-hidden border border-[#A35100]/10 relative"
+          transition={{ type: "spring", damping: 25 }}
+          className="bg-white rounded-[2rem] h-full shadow-2xl border border-[#A35100]/10 overflow-hidden relative"
         >
           {previewUrl ? (
-            <iframe key={manualReloadKey} ref={iframeRef} src={previewUrl} className="w-full h-full border-none" title="Preview" />
+            <iframe src={previewUrl} className="w-full h-full border-none" title="Vision Preview" />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full bg-white opacity-40">
-              <Loader2 size={24} className="animate-spin mb-4" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Syncing Instance...</p>
+            <div className="h-full flex flex-col items-center justify-center opacity-30">
+              <Loader2 className="animate-spin mb-4" size={24} />
+              <p className="text-[10px] font-black uppercase tracking-widest">Waking Instance...</p>
             </div>
           )}
         </motion.div>
@@ -62,9 +46,9 @@ export default function PreviewPanel({ previewUrl }) {
   );
 }
 
-function DeviceButton({ active, onClick, icon }) {
+function DeviceBtn({ active, onClick, icon }) {
   return (
-    <button onClick={onClick} className={`p-2.5 rounded-full transition-all ${active ? 'bg-[#A35100] text-[#FDF3E4]' : 'text-[#A35100]/30 hover:bg-[#A35100]/5'}`}>
+    <button onClick={onClick} className={`p-2.5 rounded-xl transition-all ${active ? 'bg-[#A35100] text-white' : 'text-[#A35100]/40 hover:bg-[#A35100]/5'}`}>
       {icon}
     </button>
   );
