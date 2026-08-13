@@ -1,54 +1,40 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getFileIcon } from '../../utils/getFileIcon';
 import { X } from 'lucide-react';
 
 export default function EditorTabs({ openFiles, activeFile, onSelect, onClose }) {
   return (
-    <div className="flex items-center bg-[#000] border-b border-white/5 overflow-x-auto h-12 no-scrollbar">
+    <div className="flex items-center bg-[#FDF3E4] border-b border-[#A35100]/10 overflow-x-auto h-14 no-scrollbar">
       <AnimatePresence mode="popLayout">
         {openFiles.map((file) => {
           const name = file.path.split('/').pop();
-          const { icon, color } = getFileIcon(name);
           const isActive = file.path === activeFile;
 
           return (
             <motion.div
               key={file.path}
               layout
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               onClick={() => onSelect(file.path)}
               className={`
-                group relative flex items-center gap-3 px-5 h-full cursor-pointer 
-                transition-all border-r border-white/5 min-w-max select-none
-                ${isActive ? 'bg-white/[0.03]' : 'hover:bg-white/[0.01]'}
+                group relative flex items-center gap-4 px-8 h-full cursor-pointer 
+                transition-all border-r border-[#A35100]/5 min-w-max select-none
+                ${isActive ? 'bg-white' : 'hover:bg-white/40'}
               `}
             >
-              {/* File Icon */}
-              <span 
-                className={`text-[14px] transition-all duration-300 ${isActive ? 'opacity-100 scale-110' : 'opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-60'}`}
-                style={{ color: isActive ? color : 'inherit' }}
-              >
-                {icon}
-              </span>
-
               {/* Filename */}
               <span className={`
-                text-[12px] font-bold tracking-tight transition-colors
-                ${isActive ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'}
+                text-[11px] font-bold uppercase tracking-widest transition-colors
+                ${isActive ? 'text-[#A35100]' : 'text-[#A35100]/40 group-hover:text-[#A35100]/70'}
               `}>
                 {name}
               </span>
 
-              {/* LED Dirty State */}
+              {/* Dirty State Dot */}
               {file.isDirty && (
-                <motion.div 
-                  initial={{ scale: 0 }} 
-                  animate={{ scale: 1 }} 
-                  className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] ml-1" 
-                />
+                <div className="w-1 h-1 rounded-full bg-[#A35100]" />
               )}
 
               {/* Close Button */}
@@ -57,17 +43,21 @@ export default function EditorTabs({ openFiles, activeFile, onSelect, onClose })
                   e.stopPropagation(); 
                   onClose(file.path); 
                 }} 
-                className="p-1 rounded-md opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10 text-zinc-500 hover:text-white ml-2"
+                className={`
+                  p-1 transition-all rounded hover:bg-[#A35100]/5
+                  ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+                  text-[#A35100]/40 hover:text-red-500
+                `}
               >
-                <X size={12} />
+                <X size={10} />
               </button>
 
-              {/* Active Underline Indicator */}
+              {/* Nexus Active Indicator */}
               {isActive && (
                 <motion.div 
                   layoutId="activeTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_15px_#3b82f6]"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#A35100]"
+                  transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                 />
               )}
             </motion.div>

@@ -1,11 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100;0,14..32,200;0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,100;1,14..32,200;1,14..32,300&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap');
 @import "tailwindcss";
 
+/* ── Nexus Warm Palette Design Tokens ── */
 :root {
-  --primary: #2dd4bf; 
-  --primary-glow: rgba(45, 212, 191, 0.2);
-  --bg-dark: #020617; 
-  --bg-card: #0f172a; 
-  --border-color: rgba(255, 255, 255, 0.06);
+  /* Primary warm palette — matches Home folder design system */
+  --nexus-bg:        #FDF3E4;   /* warm cream — main background */
+  --nexus-surface:   #EBE0CF;   /* warm linen — elevated surfaces */
+  --nexus-accent:    #A35100;   /* burnt orange — primary accent */
+  --nexus-accent-2:  #B55500;   /* deeper orange — secondary accent */
+  --nexus-text:      #34170A;   /* deep brown — body text */
+  --nexus-border:    rgba(163, 81, 0, 0.10); /* accent at 10% opacity */
+
+  /* Legacy aliases (kept for any lib that may reference them) */
+  --primary:         #A35100;
+  --primary-glow:    rgba(163, 81, 0, 0.15);
 }
 
 /* ── LENIS CRITICAL SETUP (Fixes the Glitch) ── */
@@ -29,38 +37,107 @@ html.lenis, html.lenis body {
   pointer-events: none;
 }
 
-/* ── Custom scrollbar ── */
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(45, 212, 191, 0.1) transparent;
-}
-.scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(45, 212, 191, 0.2); border-radius: 99px; }
-.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-
-.scrollbar-none::-webkit-scrollbar { display: none; }
-
 /* ── Base reset ── */
 html, body {
   width: 100%;
   min-height: 100%;
-  /* Removed overflow-x: hidden from here as Lenis handles it better */
-  background: var(--bg-dark);
-  color: #f1f5f9;
+  background: var(--nexus-bg);
+  color: var(--nexus-text);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
 }
 
-/* ── Animations ── */
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── Selection color — Nexus orange ── */
+::selection {
+  background: rgba(163, 81, 0, 0.15);
+  color: var(--nexus-text);
 }
 
+/* ── Textarea defaults ── */
+textarea { tab-size: 2; }
+
+/* ══════════════════════════════════════════════════
+   NEXUS SCROLLBAR UTILITIES
+   Used across: AIChat, FileExplorer, PreviewPanel,
+   EditorPanel, SettingsModal, LandingPage, AppShell
+   ══════════════════════════════════════════════════ */
+
+/* Styled scrollbar — warm orange accent */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(163, 81, 0, 0.15) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(163, 81, 0, 0.12);
+  border-radius: 99px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 81, 0, 0.28);
+}
+
+/* Hidden scrollbar — used in EditorTabs */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Legacy alias — kept for backward compat */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(163, 81, 0, 0.15) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(163, 81, 0, 0.15);
+  border-radius: 99px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 81, 0, 0.30);
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════════════════════════
+   NEXUS LAYOUT UTILITIES
+   ══════════════════════════════════════════════════ */
+
+/* 3D perspective — used in DescriptionSection */
+.perspective-2000 {
+  perspective: 2000px;
+}
+
+/* ══════════════════════════════════════════════════
+   NEXUS ANIMATIONS
+   ══════════════════════════════════════════════════ */
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
 
-textarea { tab-size: 2; }
-::selection { background: rgba(45, 212, 191, 0.3); }
+@keyframes nexus-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.05); }
+}
+.animate-nexus-pulse { animation: nexus-pulse 3s ease-in-out infinite; }
+
+/* ── Focus ring — warm orange for keyboard accessibility ── */
+:focus-visible {
+  outline: 2px solid rgba(163, 81, 0, 0.40);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

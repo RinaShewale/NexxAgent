@@ -11,6 +11,7 @@ const MainLayout = () => {
   const hiddenNavbarPaths = [
     '/shell',
     '/login',
+   
     // You can add more here easily:
     // '/dashboard',
     // '/admin',

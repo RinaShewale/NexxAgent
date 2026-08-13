@@ -56,7 +56,7 @@ export const googleCallback = async (req, res) => {
     }
 
     const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    const redirectTarget = `${clientUrl.replace(/\/$/, "")}/shell`;
+    const redirectTarget = `${clientUrl.replace(/\/$/, "")}/dashboard`;
 
     return res.redirect(redirectTarget);
 

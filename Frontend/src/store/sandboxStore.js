@@ -23,15 +23,16 @@ const useSandboxStore = create((set, get) => ({
   agentUrl: null,
   status: 'idle', // 'idle' | 'loading' | 'ready' | 'error'
   error: null,
+  errorAt: null,
   previewKey: 0,
-  
+
   triggerPreviewReload: () => set((state) => ({ previewKey: state.previewKey + 1 })),
-  
+
   // UI views: 'landing' | 'generating' | 'editor'
-  viewState: 'landing', 
+  viewState: 'landing',
   initialPrompt: '',
   elapsedTime: 0,
-  
+
   // List of files worked on by the agent
   generatedFiles: [
     { name: 'metadata.json', status: 'done' },
@@ -42,7 +43,7 @@ const useSandboxStore = create((set, get) => ({
   setViewState: (viewState) => set({ viewState }),
   setElapsedTime: (time) => set({ elapsedTime: time }),
   setGeneratedFiles: (files) => set({ generatedFiles: files }),
-  
+
   setSandbox: ({ sandboxID, previewUrl, agentUrl }) => {
     const nextState = {
       sandboxID,
@@ -50,6 +51,7 @@ const useSandboxStore = create((set, get) => ({
       agentUrl,
       status: 'ready',
       error: null,
+      errorAt: null,
       viewState: 'editor'
     };
     saveToStorage({ sandboxID, previewUrl, agentUrl, initialPrompt: get().initialPrompt });
@@ -57,7 +59,7 @@ const useSandboxStore = create((set, get) => ({
   },
 
   setStatus: (status) => set({ status }),
-  setError: (error) => set({ error, status: 'error', viewState: 'landing' }),
+  setError: (error) => set({ error, errorAt: Date.now(), status: 'error', viewState: 'landing' }),
 
   reset: () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -67,6 +69,7 @@ const useSandboxStore = create((set, get) => ({
       agentUrl: null,
       status: 'idle',
       error: null,
+      errorAt: null,
       viewState: 'landing',
       initialPrompt: '',
       elapsedTime: 0,

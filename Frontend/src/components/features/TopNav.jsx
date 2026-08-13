@@ -1,37 +1,28 @@
 import React from 'react';
-import { Search, Bell, Menu, ChevronRight } from 'lucide-react';
+import { Search, Bell, Menu } from 'lucide-react';
 
 export default function TopNav({ onSearch, onNotify, onMenuClick, activeTab }) {
   return (
-    <header className="flex items-center justify-between px-6 h-16 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-      <div className="flex items-center gap-4">
-        <button onClick={onMenuClick} className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors">
-          <Menu size={20} />
+    <header className="flex items-center justify-between px-10 h-24 border-b border-[#A35100]/10 bg-[#FDF3E4]/80 backdrop-blur-xl">
+      <div className="flex items-center gap-6">
+        <button onClick={onMenuClick} className="lg:hidden p-2 text-[#A35100]">
+          <Menu size={24} />
         </button>
-        
-        <div className="hidden sm:flex items-center gap-2 text-sm">
-          <span className="text-white/40">App</span>
-          <ChevronRight size={14} className="text-white/20" />
-          <span className="text-white font-medium">{activeTab}</span>
-        </div>
+        <span className="text-[11px] font-black uppercase tracking-[0.5em] text-[#34170A]">{activeTab}</span>
       </div>
       
-      <div className="flex items-center gap-2">
-        {/* Modern Search Trigger */}
+      <div className="flex items-center gap-8">
         <button 
           onClick={onSearch} 
-          className="flex items-center gap-3 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/40 hover:text-white hover:border-white/20 transition-all text-sm group"
+          className="flex items-center gap-12 px-6 py-2 border border-[#A35100]/10 rounded-full text-[#34170A]/30 hover:border-[#A35100]/40 transition-all text-[11px] font-bold"
         >
-          <Search size={14} className="group-hover:scale-110 transition-transform" />
-          <span className="pr-8">Quick search...</span>
-          <kbd className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded opacity-50">⌘K</kbd>
+          <span className="uppercase tracking-widest">Global Search</span>
+          <kbd className="opacity-20 font-sans">⌘K</kbd>
         </button>
 
-        <div className="w-[1px] h-4 bg-white/10 mx-2" />
-
-        <button onClick={onNotify} className="p-2 text-white/40 hover:text-white relative transition-colors">
-          <Bell size={18} />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+        <button onClick={onNotify} className="relative text-[#A35100]/40 hover:text-[#A35100] transition-colors">
+          <Bell size={20} />
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#A35100] rounded-full shadow-[0_0_8px_#A35100]" />
         </button>
       </div>
     </header>

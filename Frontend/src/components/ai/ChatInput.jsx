@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Terminal, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Send, Loader2 } from 'lucide-react';
 
 export default function ChatInput({ onSend, disabled }) {
   const [value, setValue] = useState('');
@@ -14,15 +14,15 @@ export default function ChatInput({ onSend, disabled }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto w-full group">
-      <div className="relative flex flex-col bg-zinc-900/50 border border-white/10 rounded-[24px] focus-within:border-white/20 focus-within:bg-zinc-900/80 transition-all duration-300 shadow-2xl overflow-hidden backdrop-blur-md">
+    <div className="w-full">
+      <div className="relative flex flex-col bg-[#FDF3E4] border border-[#A35100]/10 rounded-2xl shadow-lg focus-within:shadow-xl transition-all duration-500 overflow-hidden">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
             e.target.style.height = 'auto';
-            e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+            e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
           }}
           onKeyDown={(e) => { 
             if (e.key === 'Enter' && !e.shiftKey) { 
@@ -30,42 +30,31 @@ export default function ChatInput({ onSend, disabled }) {
               handleSend(); 
             } 
           }}
-          placeholder="Ask Nexx to build something..."
-          className="w-full bg-transparent border-none outline-none text-sm leading-relaxed p-5 text-white placeholder-zinc-600 resize-none min-h-[60px] max-h-[200px]"
+          placeholder="Describe your vision..."
+          className="w-full bg-transparent border-none outline-none text-sm p-5 text-[#34170A] placeholder-[#A35100]/30 resize-none min-h-[60px]"
           rows={1}
         />
         
         <div className="flex items-center justify-between px-4 pb-4">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/40 border border-white/5">
-               <Terminal size={12} className="text-zinc-500" />
-               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                 {disabled ? 'Processing...' : 'Ready'}
-               </span>
-            </div>
-          </div>
+          <span className="text-[9px] font-bold text-[#A35100]/40 uppercase tracking-[0.2em] px-2">
+            {disabled ? 'Synthesizing...' : 'Ready to build'}
+          </span>
 
           <motion.button
-            whileHover={value.trim() ? { scale: 1.05 } : {}}
-            whileTap={value.trim() ? { scale: 0.95 } : {}}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleSend}
             disabled={!value.trim() || disabled}
-            className={`flex items-center gap-2 px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
+            className={`flex items-center gap-3 px-6 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all ${
               value.trim() && !disabled 
-                ? 'bg-white text-black hover:bg-zinc-200' 
-                : 'bg-white/5 text-zinc-700 cursor-not-allowed'
+                ? 'bg-[#A35100] text-[#FDF3E4] shadow-md shadow-[#A35100]/20' 
+                : 'bg-[#A35100]/10 text-[#A35100]/30 cursor-not-allowed'
             }`}
           >
-            {disabled ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-            <span>Send</span>
+            {disabled ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+            Send
           </motion.button>
         </div>
-      </div>
-      
-      <div className="flex items-center justify-center gap-4 mt-3 opacity-0 group-focus-within:opacity-100 transition-opacity">
-        <p className="text-[10px] text-zinc-600 font-medium tracking-tight">
-          <span className="text-zinc-400">Shift + Enter</span> for new line
-        </p>
       </div>
     </div>
   );

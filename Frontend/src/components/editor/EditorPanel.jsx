@@ -17,6 +17,7 @@ export default function EditorPanel({
 }) {
   const textareaRef = useRef(null);
 
+  // Ctrl+S shortcut
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') { 
@@ -35,24 +36,23 @@ export default function EditorPanel({
 
   if (!openFiles.length) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#000] text-zinc-500">
-        <motion.div 
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#FDF3E4] text-[#A35100]/40 font-sans">
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center"
         >
-          <div className="w-20 h-20 rounded-3xl border border-white/5 bg-white/[0.02] flex items-center justify-center mb-6 relative group">
-            <div className="absolute inset-0 bg-blue-500/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-            <FileCode size={32} className="text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+          <div className="w-24 h-24 rounded-full border border-[#A35100]/10 bg-[#EBE0CF]/30 flex items-center justify-center mb-8">
+            <FileCode size={32} strokeWidth={1} />
           </div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600">Select a file to edit</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em]">Select an architectural file</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#000] h-full overflow-hidden">
+    <div className="flex-1 flex flex-col bg-white h-full overflow-hidden shadow-inner">
       <EditorTabs 
         openFiles={openFiles} 
         activeFile={activeFile} 
@@ -70,46 +70,43 @@ export default function EditorPanel({
             className="flex flex-col flex-1 overflow-hidden"
           >
             {/* Metadata Rail */}
-            <div className="h-10 flex items-center justify-between px-6 bg-white/[0.01] border-b border-white/5">
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                  {activeFileData.path}
-                </span>
-              </div>
+            <div className="h-12 flex items-center justify-between px-8 bg-[#FDF3E4]/50 border-b border-[#A35100]/10">
+              <span className="text-[9px] font-black text-[#A35100]/60 uppercase tracking-[0.2em] font-mono">
+                {activeFileData.path}
+              </span>
               
-              <div className="flex items-center gap-6">
-                <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">
+              <div className="flex items-center gap-8">
+                <span className="text-[9px] font-bold text-[#A35100]/40 uppercase tracking-widest bg-[#A35100]/5 px-2 py-1 rounded">
                   {getLanguage(activeFileData.path)}
                 </span>
                 
                 <button 
                   onClick={() => onSave(activeFile)}
                   disabled={saveStatus === 'saving'}
-                  className={`
-                    flex items-center gap-2 transition-all group
-                    ${saveStatus === 'saved' ? 'text-blue-400' : 'text-zinc-500 hover:text-white'}
-                  `}
+                  className={`flex items-center gap-2 transition-all ${
+                    saveStatus === 'saved' ? 'text-green-600' : 'text-[#A35100] hover:opacity-70'
+                  }`}
                 >
                   {saveStatus === 'saving' ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={12} className="animate-spin" />
                   ) : saveStatus === 'saved' ? (
-                    <Check size={14} />
+                    <Check size={12} />
                   ) : (
-                    <Save size={14} className="group-hover:scale-110 transition-transform" />
+                    <Save size={12} />
                   )}
                   <span className="text-[10px] font-black uppercase tracking-widest">
-                    {saveStatus === 'saving' ? 'Syncing' : saveStatus === 'saved' ? 'Saved' : 'Save'}
+                    {saveStatus === 'saving' ? 'Syncing' : saveStatus === 'saved' ? 'Synced' : 'Save'}
                   </span>
                 </button>
               </div>
             </div>
 
             {/* Editor Surface */}
-            <div className="flex-1 flex overflow-hidden">
-              {/* Gutter */}
-              <div className="bg-[#050505] py-6 px-4 text-right text-zinc-700 font-mono text-[11px] leading-[1.6] select-none min-w-[3.5rem] border-r border-white/5">
+            <div className="flex-1 flex overflow-hidden bg-white">
+              {/* Gutter — scrolls in sync with textarea via overflow-hidden */}
+              <div className="bg-[#FDF3E4]/30 py-8 px-4 text-right text-[#A35100]/20 font-mono text-[10px] leading-[1.8] select-none min-w-[4rem] border-r border-[#A35100]/5 overflow-hidden">
                 {lines.map((_, i) => (
-                  <div key={i} className="hover:text-zinc-400 transition-colors">{i + 1}</div>
+                  <div key={i}>{i + 1}</div>
                 ))}
               </div>
 
@@ -119,7 +116,7 @@ export default function EditorPanel({
                 value={content}
                 onChange={(e) => onContentChange(activeFile, e.target.value)}
                 spellCheck={false}
-                className="flex-1 bg-transparent text-zinc-300 font-mono text-[13px] leading-[1.6] p-6 outline-none resize-none overflow-auto custom-scrollbar caret-blue-500 placeholder-zinc-800"
+                className="flex-1 bg-transparent text-[#34170A] font-mono text-[13px] leading-[1.8] p-8 outline-none resize-none overflow-auto custom-scrollbar caret-[#A35100] placeholder-[#A35100]/10"
               />
             </div>
           </motion.div>

@@ -4,17 +4,16 @@ import InteractiveLoadingPage from '../components/Home/Loading/InteractiveLoadin
 
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
+ const [isLoading, setIsLoading] = useState(true);
 
-  return (
-    <div className="bg-[#FFF2E0] min-h-screen">
-      {isLoading ? (
-        <InteractiveLoadingPage
-          onComplete={() => setIsLoading(false)} 
-        />
-      ) : (
-        <AppRoute /> 
-      )}
-    </div>
-  );
+return (
+  <div className="bg-[#FFF2E0] min-h-screen">
+    {isLoading ? (
+      <InteractiveLoadingPage onComplete={() => setIsLoading(false)} />
+    ) : (
+      <AppRoute />
+    )}
+  </div>
+);
+  
 }

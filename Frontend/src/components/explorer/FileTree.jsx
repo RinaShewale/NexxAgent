@@ -5,7 +5,7 @@ export default function FileTree({ tree, onFileClick }) {
   if (!tree) return null;
   
   return (
-    <div className="py-2">
+    <div className="flex flex-col gap-1">
       {tree.map((node) => (
         <FileTreeNode 
           key={node.path} 
