@@ -9,7 +9,8 @@ export async function invokeAI({ message, sandboxID, onChunk, onDone, onError })
     const response = await fetch(`${BASE_URL}/ai/invoke`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, sandboxID }),
+      // FIX #1: backend expects "projectId", not "sandboxID"
+      body: JSON.stringify({ message, projectId: sandboxID }),
     });
 
     if (!response.ok) {
@@ -21,18 +22,39 @@ export async function invokeAI({ message, sandboxID, onChunk, onDone, onError })
     const decoder = new TextDecoder();
     let buffer = '';
 
+    // FIX #2: track the current SSE "event:" type so we don't
+    // treat "event: end" / "event: error" lines as chat content.
+    let currentEvent = 'message';
+
     const processLine = (line) => {
       const trimmed = line.trim();
       if (!trimmed) return;
 
-      // Strip the "data: " SSE prefix
-      const cleanedLine = trimmed.startsWith('data:')
-        ? trimmed.slice(5).trim()
-        : trimmed;
+      if (trimmed.startsWith('event:')) {
+        currentEvent = trimmed.slice(6).trim();
+        return;
+      }
 
-      if (cleanedLine === '[DONE]') {
+      if (!trimmed.startsWith('data:')) {
+        // Unknown line type (not data, not event) — ignore instead of forwarding.
+        return;
+      }
+
+      const cleanedLine = trimmed.slice(5).trim();
+
+      if (currentEvent === 'end' || cleanedLine === '[DONE]') {
         onDone?.();
         return true; // signal done
+      }
+
+      if (currentEvent === 'error') {
+        try {
+          const parsed = JSON.parse(cleanedLine);
+          onError?.(parsed.message || cleanedLine);
+        } catch {
+          onError?.(cleanedLine);
+        }
+        return true;
       }
 
       try {
@@ -53,6 +75,9 @@ export async function invokeAI({ message, sandboxID, onChunk, onDone, onError })
         // Not JSON — forward as raw text if non-empty
         if (cleanedLine) onChunk(cleanedLine);
       }
+
+      // reset event type after a data line, per SSE convention
+      currentEvent = 'message';
     };
 
     while (true) {

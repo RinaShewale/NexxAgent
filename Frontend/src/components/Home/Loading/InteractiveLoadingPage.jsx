@@ -71,7 +71,7 @@ const InteractiveLoadingPage = ({ onComplete }) => {
       attr: { d: 'M 0 0 L 100 0 L 100 0 Q 50 -40 0 0 Z' },
       duration: 1.5,
       ease: 'power4.inOut',
-    }, "-=0.6");
+    }, "-=0.6"); 
 
     tl.to(midLayerRef.current, {
       attr: { d: 'M 0 0 L 100 0 L 100 0 Q 50 -40 0 0 Z' },

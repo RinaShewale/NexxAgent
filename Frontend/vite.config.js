@@ -14,7 +14,7 @@ export default defineConfig({
       },
 
       "/agent-proxy": {
-        target: "http://127.0.0.1:3000",
+        target: "http://localhost",
         changeOrigin: false,
         secure: false,
         ws: true,

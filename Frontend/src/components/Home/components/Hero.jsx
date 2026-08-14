@@ -6,28 +6,22 @@ const Hero = () => {
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      // Create timeline
       const tl = gsap.timeline({ delay: 0.5 });
 
-      // FIX: Move visibility into the timeline so it respects the 0.5s delay
-      // autoAlpha handles both opacity and visibility to prevent any flickering
+      // Ensure the container is ready for animation
       tl.set(container.current, { autoAlpha: 1 })
       
-      // 1. Vertical spine grows from center
       .fromTo(".l-stem", 
         { scaleY: 0 }, 
         { scaleY: 1, transformOrigin: "center", duration: 1.5, ease: "expo.inOut" }
       )
-      // 2. Horizontal strokes grow
       .fromTo(".stroke-left, .stroke-right", 
         { scaleX: 0 }, 
         { scaleX: 1, duration: 0.8, ease: "power3.out", stagger: 0.2 }, 
         "-=0.7"
       )
-      // 3. Names reveal
       .fromTo(".name-left", { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 1.2, ease: "power4.out" }, "-=0.6")
       .fromTo(".name-right", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 1.2, ease: "power4.out" }, "-=1")
-      // 4. Labels
       .fromTo(".sub-label", { opacity: 0 }, { opacity: 0.6, duration: 1, stagger: 0.1 }, "-=0.5");
     }, container);
 
@@ -45,9 +39,8 @@ const Hero = () => {
         backgroundColor: bgColor, 
         color: themeColor, 
         fontFamily: "'Inter', sans-serif",
-        // FIX: Start hidden via visibility and opacity
         opacity: 0,
-        visibility: 'hidden' 
+        visibility: 'hidden' // Prevents FOUC
       }}
     >
       <div className="relative w-full max-w-[1400px] h-full flex items-center justify-center">
@@ -55,7 +48,8 @@ const Hero = () => {
         {/* 1. CENTRAL VERTICAL STEM */}
         <div 
           className="l-stem absolute left-1/2 -translate-x-1/2 w-[6px] h-[37vh] bg-[#A35100]" 
-          style={{ transform: 'scaleY(0)' }} 
+          // GLITCH FIX: Added transformOrigin to inline style to match GSAP
+          style={{ transform: 'scaleY(0)', transformOrigin: 'center' }} 
         />
 
         {/* --- LEFT SIDE --- */}
@@ -97,7 +91,8 @@ const Hero = () => {
         </div>
       </div>
 
-      <style jsx global>{`
+      {/* GLITCH FIX: Changed jsx and global to strings to fix console error */}
+      <style jsx="true" global="true">{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100;0,14..32,200;1,14..32,100&display=swap');
         
         body {
@@ -109,6 +104,9 @@ const Hero = () => {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           font-variation-settings: "wght" 100;
+          /* Force GPU acceleration to prevent text flickering during movement */
+          backface-visibility: hidden;
+          transform: translateZ(0);
         }
       `}</style>
     </section>

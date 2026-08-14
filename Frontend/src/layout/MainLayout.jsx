@@ -1,4 +1,3 @@
-// src/layout/MainLayout.js (or wherever your MainLayout is located)
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import PageTransition from "../components/Home/Loading/PageTransition";
@@ -7,33 +6,27 @@ import Navbar from "../components/Home/components/Navbar";
 const MainLayout = () => {
   const location = useLocation();
 
-  // 1. Define the list of paths where you DON'T want the Navbar to show
-  const hiddenNavbarPaths = [
-    '/shell',
-    '/login',
-   
-    // You can add more here easily:
-    // '/dashboard',
-    // '/admin',
-  ];
+  // Paths where Navbar should NOT be visible
+  const hiddenNavbarPaths = ['/shell', '/login'];
 
-  // 2. Check if current path is in our list
-  // .some and .startsWith ensures it works even if you have sub-pages like /shell/settings
+  // Check if current route starts with any of the hidden paths
   const shouldHideNavbar = hiddenNavbarPaths.some(path => 
     location.pathname.startsWith(path)
   );
 
   return (
-    <div className="bg-[#FFF2E0] min-h-screen">
-      {/* 3. Wrap Navbar in a condition */}
+    <div className="bg-[#FFF2E0] min-h-screen relative">
+      {/* 
+          If we are not in /shell, show Navbar. 
+          The AppShell is fixed (z-100), so even if this renders for 
+          a millisecond during transition, the AppShell will be on top.
+      */}
       {!shouldHideNavbar && <Navbar />}
       
-      {/* 
-        PageTransition remains here. 
-        Because it wraps the <Outlet />, the animation 
-        will still play when moving from "/" to "/shell"
-      */}
-      <PageTransition />
+      <main>
+        {/* PageTransition handles the <Outlet /> inside it */}
+        <PageTransition />
+      </main>
     </div>
   );
 };

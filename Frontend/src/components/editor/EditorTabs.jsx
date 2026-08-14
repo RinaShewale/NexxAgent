@@ -1,3 +1,5 @@
+import { AnimatePresence } from "framer-motion";
+
 export default function EditorTabs({ openFiles, activeFile, onSelect, onClose }) {
   return (
     <div className="flex items-center bg-[#FDF3E4]/80 backdrop-blur-md border-b border-[#A35100]/20 overflow-x-auto h-12 no-scrollbar">
