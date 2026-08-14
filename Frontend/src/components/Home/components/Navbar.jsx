@@ -12,14 +12,12 @@ const SideMenuContent = ({ onClose }) => {
   const containerRef = useRef(null);
   const [isPresent, safeToRemove] = usePresence();
 
-  // FIX: capture the pathname once, at the moment this instance mounts (i.e. when
-  // the menu opens). Because SideMenuContent is only ever mounted while the menu
-  // is open/closing, this value stays frozen for this instance even if the user
-  // clicks a link and the route changes underneath it during the close animation.
-  // That stops the item list from swapping (e.g. "New Chat" flashing in) mid-close.
+  // FIX 1: Freeze Auth State & Pathname
+  // This prevents the menu from "flickering" or changing items while it is animating closed
   const [menuPathname] = useState(location.pathname);
+  const [wasAuthenticated] = useState(isAuthenticated);
+  const [frozenUser] = useState(user);
 
-  // Logic to determine which menu to show based on the URL path the menu was opened from
   const menuConfig = useMemo(() => {
     const playgroundItems = [
       { label: 'New Chat', path: '/dashboard' },
@@ -36,7 +34,6 @@ const SideMenuContent = ({ onClose }) => {
       { label: 'Pricing', path: '/pricing' },
     ];
 
-    // Define paths that should show the standard "Marketing" menu
     const standardPaths = ['/', '/about', '/community', '/pricing', '/login'];
     const isStandardPage = standardPaths.includes(menuPathname);
 
@@ -90,6 +87,14 @@ const SideMenuContent = ({ onClose }) => {
     exit: { opacity: 0, y: 10, transition: { duration: 0.4 } }
   };
 
+  // Helper to handle logout and close simultaneously
+  const handleLogout = async () => {
+    onClose(); // Trigger the exit animation immediately
+    setTimeout(() => {
+      logout(); // Execute logout logic
+    }, 300); // Small delay to let the animation start
+  };
+
   return (
     <div ref={containerRef} className="fixed inset-0 z-[200] flex justify-end overflow-hidden">
       <motion.div
@@ -103,19 +108,8 @@ const SideMenuContent = ({ onClose }) => {
 
       <div className="relative h-full w-full max-w-[550px] pointer-events-none">
         <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path
-            ref={orangePathRef}
-            fill="#B55500"
-            d={initialPath}
-            style={{ opacity: 0 }}
-          />
-          <path
-            ref={pathRef}
-            fill="#34170A"
-            d={initialPath}
-            className="translate-x-[1px]"
-            style={{ opacity: 0 }}
-          />
+          <path ref={orangePathRef} fill="#B55500" d={initialPath} style={{ opacity: 0 }} />
+          <path ref={pathRef} fill="#34170A" d={initialPath} className="translate-x-[1px]" style={{ opacity: 0 }} />
         </svg>
 
         <motion.div
@@ -132,12 +126,13 @@ const SideMenuContent = ({ onClose }) => {
           </button>
 
           <div className="w-full flex flex-col items-center justify-center">
-            {isAuthenticated && user && (
+            {/* Use frozenUser and wasAuthenticated to keep UI stable during close */}
+            {wasAuthenticated && frozenUser && (
               <motion.div variants={itemVariants} className="flex flex-col items-center mb-10">
                 <div className="p-1 rounded-full border border-[#B55500] mb-3">
-                  <img src={user.avatar} alt={user.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover" />
+                  <img src={frozenUser.avatar} alt={frozenUser.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover" />
                 </div>
-                <p className="text-[11px] tracking-widest font-bold text-[#B55500] uppercase">{user.name}</p>
+                <p className="text-[11px] tracking-widest font-bold text-[#B55500] uppercase">{frozenUser.name}</p>
                 {!menuConfig.isStandard && <p className="text-[8px] opacity-30 tracking-widest uppercase mt-1">Active Session</p>}
               </motion.div>
             )}
@@ -158,8 +153,11 @@ const SideMenuContent = ({ onClose }) => {
               ))}
 
               <motion.div variants={itemVariants} className="pt-4 group">
-                {isAuthenticated ? (
-                  <button onClick={() => { logout(); onClose(); }} className="text-xs opacity-40 font-light tracking-[0.2em] uppercase hover:text-[#B55500] transition-all duration-300">
+                {wasAuthenticated ? (
+                  <button 
+                    onClick={handleLogout} 
+                    className="text-xs opacity-40 font-light tracking-[0.2em] uppercase hover:text-[#B55500] transition-all duration-300"
+                  >
                     Logout
                   </button>
                 ) : (
@@ -177,8 +175,8 @@ const SideMenuContent = ({ onClose }) => {
 };
 
 const SideMenu = ({ isOpen, onClose }) => (
-  <AnimatePresence>
-    {isOpen && <SideMenuContent onClose={onClose} />}
+  <AnimatePresence mode="wait">
+    {isOpen && <SideMenuContent onClose={onClose} key="side-menu-content" />}
   </AnimatePresence>
 );
 
@@ -198,11 +196,6 @@ const Navbar = () => {
     }
   });
 
-  // FIX: a route change can cause an abrupt scroll-position jump (new page has
-  // different content height), which the scroll listener above misreads as a
-  // "scroll down" and hides the navbar off-screen. Force the navbar visible again
-  // whenever the page actually changes, so the menu button is always reachable
-  // right after navigating.
   useEffect(() => {
     setIsHidden(false);
   }, [location.pathname]);
@@ -236,11 +229,7 @@ const Navbar = () => {
         <div className="flex items-center gap-6 pointer-events-auto">
           {isAuthenticated && user?.avatar && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden md:block">
-              <img
-                src={user.avatar}
-                alt="Profile"
-                className="w-8 h-8 rounded-full border border-[#B55500]/30 object-cover"
-              />
+              <img src={user.avatar} alt="Profile" className="w-8 h-8 rounded-full border border-[#B55500]/30 object-cover" />
             </motion.div>
           )}
 
@@ -249,20 +238,9 @@ const Navbar = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           >
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="flex items-center gap-1.5 cursor-pointer h-8 group"
-            >
-              <motion.div
-                className="w-[1px] bg-[#B55500]"
-                animate={{ height: isMenuOpen ? 0 : 20 }}
-                whileHover={{ height: 12 }}
-              />
-              <motion.div
-                className="w-[1px] bg-[#B55500]"
-                animate={{ height: isMenuOpen ? 0 : 28 }}
-                whileHover={{ height: 36 }}
-              />
+            <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-1.5 cursor-pointer h-8 group">
+              <motion.div className="w-[1px] bg-[#B55500]" animate={{ height: isMenuOpen ? 0 : 20 }} />
+              <motion.div className="w-[1px] bg-[#B55500]" animate={{ height: isMenuOpen ? 0 : 28 }} />
             </button>
           </motion.div>
         </div>

@@ -88,36 +88,6 @@ export default function LoginPage({ onCancel }) {
         />
       </div>
 
-      {/* Nav */}
-      <motion.nav
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-50 flex items-center justify-between px-10 py-8"
-      >
-        <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="relative w-10 h-10 flex items-center justify-center">
-             <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 border border-[#A35100]/20 rounded-xl" 
-             />
-             <div className="w-8 h-8 rounded-lg bg-[#A35100] flex items-center justify-center text-[#FDF3E4] shadow-xl">
-               <span className="text-xl">✦</span>
-             </div>
-          </div>
-          <span className="font-serif italic text-xl tracking-tight">NexxAgent</span>
-        </div>
-
-        {onCancel && (
-          <button 
-            onClick={onCancel}
-            className="text-[10px] uppercase tracking-[0.4em] font-bold opacity-40 hover:opacity-100 transition-opacity"
-          >
-            [ Close ]
-          </button>
-        )}
-      </motion.nav>
-
       {/* Main Content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6">
         <motion.div 

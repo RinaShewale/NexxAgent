@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Lenis from '@studio-freight/lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Navbar from '../components/Navbar';
+
 import Hero from '../components/Hero';
 import ImageSplitSection from '../components/ImageSplitSection';
 import DescriptionSection from '../components/DescriptionSection';
@@ -40,7 +40,7 @@ const HomePage = () => {
 
   return (
     <main className="relative w-full overflow-x-hidden">
-      <Navbar />
+   
 
       <Hero />
 

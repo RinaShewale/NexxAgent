@@ -1,34 +1,37 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import PageTransition from "../components/Home/Loading/PageTransition";
 import Navbar from "../components/Home/components/Navbar";
+import { TransitionPathProvider, useTransitionPath } from "../components/Home/Loading/Transitionpathcontext"; // adjust path as needed
 
-const MainLayout = () => {
-  const location = useLocation();
+const hiddenNavbarPaths = [
+  '/login',
+  '/shell', // Add your editor/app path here
+];
 
-  // Paths where Navbar should NOT be visible
-  const hiddenNavbarPaths = ['/shell', '/login'];
+const MainLayoutInner = () => {
+  // Use the DISPLAYED path (synced to what PageTransition is actually showing),
+  // not the raw router location, so the navbar doesn't flip visibility until
+  // the content it's guarding has actually swapped.
+  const { displayPath } = useTransitionPath();
 
-  // Check if current route starts with any of the hidden paths
-  const shouldHideNavbar = hiddenNavbarPaths.some(path => 
-    location.pathname.startsWith(path)
+  const shouldHideNavbar = hiddenNavbarPaths.some(path =>
+    displayPath.startsWith(path)
   );
 
   return (
-    <div className="bg-[#FFF2E0] min-h-screen relative">
-      {/* 
-          If we are not in /shell, show Navbar. 
-          The AppShell is fixed (z-100), so even if this renders for 
-          a millisecond during transition, the AppShell will be on top.
-      */}
+    <div className="bg-[#FFF2E0] min-h-screen flex flex-col">
       {!shouldHideNavbar && <Navbar />}
-      
-      <main>
-        {/* PageTransition handles the <Outlet /> inside it */}
+      <div className="flex-1">
         <PageTransition />
-      </main>
+      </div>
     </div>
   );
 };
+
+const MainLayout = () => (
+  <TransitionPathProvider>
+    <MainLayoutInner />
+  </TransitionPathProvider>
+);
 
 export default MainLayout;
