@@ -30,11 +30,12 @@ const SideMenuContent = ({ onClose }) => {
       { label: 'Home', path: '/' },
       { label: 'About', path: '/about' },
       { label: 'Community', path: '/community' },
+       { label: 'Websites', path: '/websites' },
       { label: 'Dashboard', path: '/dashboard' },
       { label: 'Pricing', path: '/pricing' },
     ];
 
-    const standardPaths = ['/', '/about', '/community', '/pricing', '/login'];
+    const standardPaths = ['/', '/about', '/community', '/websites', '/pricing', '/login'];
     const isStandardPage = standardPaths.includes(menuPathname);
 
     return {

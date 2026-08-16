@@ -8,6 +8,7 @@ import Community from '../components/Home/pages/Community';
 import Pricing from '../components/Home/pages/Pricing';
 import AppShell from '../components/Shells/AppShell'
 import LandingPage from '../components/Shells/LandingPage';
+import TemplateShowcase from '../components/Home/pages/TempleteShowcase';
 
 
 
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/community", element: <Community /> },
+      { path: "/websites", element: <TemplateShowcase /> },
       { path: "/about", element: <About /> },
       { path: "/pricing", element: <Pricing /> },
       { path: "/login", element: <LoginPage /> },
