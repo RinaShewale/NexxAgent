@@ -15,24 +15,33 @@ passport.use(
 
     async (accessToken, refreshToken, profile, done) => {
       try {
-
         let user = await User.findOne({
           googleId: profile.id,
         });
 
+        // strip the size suffix (e.g. "=s96-c") from Google's photo URL
+        const avatar = profile.photos?.[0]?.value?.split("=")[0] || null;
 
         if (!user) {
           user = await User.create({
             googleId: profile.id,
             name: profile.displayName,
             email: profile.emails[0].value,
-            avatar: profile.photos[0].value,
+            avatar,
           });
+        } else {
+          // keep name in sync on every login
+          user.name = profile.displayName;
+          // only overwrite avatar if Google actually returned one this time —
+          // prevents wiping a previously-good avatar on a login where
+          // profile.photos comes back empty
+          if (avatar) {
+            user.avatar = avatar;
+          }
+          await user.save();
         }
 
-
         done(null, user);
-
       } catch (error) {
         done(error, null);
       }
@@ -40,16 +49,17 @@ passport.use(
   )
 );
 
-
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
-
 
 export default passport;

@@ -2,6 +2,22 @@ import jwt from "jsonwebtoken";
 import { SendAuthNotification } from "../config/mq.js";
 import User from "../models/user.model.js";
 
+// Cookie options — shared across set/clear so they always match.
+// sameSite: "none" + secure: true is required so the cookie is sent
+// on cross-origin fetch/axios calls (not just the OAuth redirect itself).
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+};
+
+const CLEAR_COOKIE_OPTS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none"
+};
+
 // Helper function to generate JWT
 const generateAuthToken = (user) => {
   return jwt.sign(
@@ -34,12 +50,7 @@ export const googleCallback = async (req, res) => {
     const token = generateAuthToken(user);
 
     // Set HTTP-only cookie with JWT token for cross-service authorization
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+    res.cookie("token", token, COOKIE_OPTS);
 
     // Attempt sending background auth notification without blocking login if MQ fails
     try {
@@ -60,7 +71,6 @@ export const googleCallback = async (req, res) => {
 
     return res.redirect(redirectTarget);
 
-
   } catch (error) {
     console.log("Google Callback Error:", error);
 
@@ -70,16 +80,12 @@ export const googleCallback = async (req, res) => {
   }
 };
 
-
 // Logout Controller
 export const logout = async (req, res) => {
   try {
-    // Clear JWT token cookie
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax"
-    });
+    // Clear JWT token cookie — options must match how it was originally set,
+    // otherwise the browser silently ignores the clear.
+    res.clearCookie("token", CLEAR_COOKIE_OPTS);
 
     req.logout((err) => {
       if (err) {
@@ -95,7 +101,7 @@ export const logout = async (req, res) => {
           });
         }
 
-        res.clearCookie("connect.sid");
+        res.clearCookie("connect.sid", CLEAR_COOKIE_OPTS);
 
         return res.status(200).json({
           success: true,
@@ -113,7 +119,6 @@ export const logout = async (req, res) => {
   }
 };
 
-
 // Authentication Failed Controller
 export const authFailed = (req, res) => {
   res.status(401).json({
@@ -121,7 +126,6 @@ export const authFailed = (req, res) => {
     message: "Google Authentication Failed"
   });
 };
-
 
 // Get Current Authenticated User Controller
 export const getCurrentUser = async (req, res) => {
@@ -131,12 +135,7 @@ export const getCurrentUser = async (req, res) => {
       // Re-issue / ensure token cookie is present
       const token = req.cookies?.token || generateAuthToken(req.user);
       if (!req.cookies?.token) {
-        res.cookie("token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        res.cookie("token", token, COOKIE_OPTS);
       }
 
       return res.status(200).json({
