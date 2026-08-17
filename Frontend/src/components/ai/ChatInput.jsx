@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Sparkle } from 'lucide-react';
 
-export default function ChatInput({ onSend, disabled }) {
+export default function ChatInput({ onSend, disabled, isMobile }) {
   const [value, setValue] = useState('');
   const textareaRef = useRef(null);
 
@@ -15,44 +15,42 @@ export default function ChatInput({ onSend, disabled }) {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, isMobile ? 120 : 200)}px`;
     }
-  }, [value]);
+  }, [value, isMobile]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4">
-      <div className="relative bg-[#fdf9f3] border border-[#A35100]/15 rounded-[2rem] shadow-2xl shadow-[#34170A]/5 transition-all duration-500 overflow-hidden focus-within:border-[#A35100]/30">
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="relative bg-[#FDF3E4] border border-[#A35100]/20 rounded-3xl shadow-xl shadow-[#34170A]/5 overflow-hidden transition-all focus-within:border-[#A35100]/50 focus-within:shadow-[#A35100]/5">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
           placeholder="Describe your vision..."
-          className="w-full bg-transparent border-none outline-none text-base p-6 pb-2 text-[#34170A] placeholder-[#A35100]/25 resize-none min-h-[70px]"
+          className="w-full bg-transparent border-none outline-none text-[15px] p-5 pb-1 text-[#34170A] placeholder-[#34170A]/20 resize-none min-h-[60px] custom-scrollbar"
           rows={1}
         />
         
-        <div className="flex items-center justify-between px-6 pb-5">
-          <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${disabled ? 'bg-orange-500 animate-pulse' : 'bg-[#A35100]/20'}`} />
-            <span className="text-[10px] font-black text-[#A35100]/40 uppercase tracking-[0.2em]">
-              {disabled ? 'Synthesizing...' : 'Ready to build'}
+        <div className="flex items-center justify-between px-5 pb-4">
+          <div className="flex items-center gap-2 opacity-40">
+            <Sparkle size={10} className={disabled ? 'animate-spin text-[#A35100]' : ''} />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em]">
+              {disabled ? 'Synthesizing...' : 'Vision Engine Ready'}
             </span>
           </div>
 
           <motion.button
-            whileHover={!disabled && value.trim() ? { scale: 1.02 } : {}}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleSend}
             disabled={!value.trim() || disabled}
-            className={`flex items-center gap-3 px-6 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all ${
+            className={`p-2.5 rounded-full transition-all ${
               value.trim() && !disabled 
-                ? 'bg-[#A35100] text-[#FDF3E4] shadow-lg shadow-[#A35100]/20' 
-                : 'bg-[#A35100]/5 text-[#A35100]/20 cursor-not-allowed'
+                ? 'bg-[#34170A] text-[#FDF3E4] shadow-lg' 
+                : 'bg-[#34170A]/5 text-[#34170A]/20'
             }`}
           >
-            {disabled ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-            <span>Send</span>
+            {disabled ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           </motion.button>
         </div>
       </div>

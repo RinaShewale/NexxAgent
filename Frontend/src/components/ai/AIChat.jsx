@@ -1,19 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Trash2 } from 'lucide-react';
+import { Sparkles, Trash2, Cpu, ChevronLeft, X } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useAIStream } from '../../hooks/useAIStream';
 
-// Added onBuildComplete prop
-export default function AIChat({ sandboxID, onBuildComplete }) {
+export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileView = false }) {
   const { messages, streaming, sendMessage, clearChat } = useAIStream(sandboxID);
   const bottomRef = useRef(null);
   const prevStreaming = useRef(streaming);
 
-  // TRIGGER: Automatic Preview Update
   useEffect(() => {
-    // If we were streaming and now we stopped, the AI is done writing files.
     if (prevStreaming.current === true && streaming === false) {
       if (onBuildComplete) onBuildComplete();
     }
@@ -25,58 +22,75 @@ export default function AIChat({ sandboxID, onBuildComplete }) {
   }, [messages, streaming]);
 
   return (
-    <div className="flex flex-col h-full bg-[#EBE0CF] relative text-[#34170A] font-sans selection:bg-[#A35100]/20">
-      <div className="h-24 px-8 border-b border-[#A35100]/10 flex items-center justify-between bg-[#FDF3E4]/60 backdrop-blur-md z-20">
-        <div className="flex items-center gap-4">
-          <div className="relative flex items-center justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#A35100]" />
-            {streaming && (
-              <motion.div 
-                animate={{ scale: [1, 2.5], opacity: [0.4, 0] }} 
-                transition={{ duration: 1.5, repeat: Infinity }} 
-                className="absolute w-2.5 h-2.5 bg-[#A35100] rounded-full" 
-              />
-            )}
+    <div className="flex flex-col h-full bg-[#EBE0CF] relative text-[#34170A] font-sans overflow-hidden">
+      
+      {/* Dynamic Header */}
+      {!isMobileView ? (
+        <header className="h-20 px-6 md:px-8 border-b border-[#A35100]/10 flex items-center justify-between bg-[#FDF3E4]/60 backdrop-blur-md z-20 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-2 h-2 rounded-full bg-[#A35100] shadow-[0_0_10px_rgba(163,81,0,0.5)]" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none mb-1">System Agent</span>
+              <span className="text-base font-serif italic leading-none">Collective Intelligence</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Agent Dialogue</span>
-            <span className="text-base font-serif italic">Collective Intelligence</span>
-          </div>
-        </div>
-        <button onClick={clearChat} className="p-3 hover:bg-red-500/10 rounded-full text-[#A35100]/30 hover:text-red-600 transition-all">
-          <Trash2 size={18} />
-        </button>
-      </div>
+         
+        </header>
+      ) : (
+        <header className="h-14 flex items-center justify-between px-4 border-b border-[#A35100]/10 bg-[#FDF3E4]/40 flex-shrink-0">
+           <div className="flex items-center gap-3">
+             <button onClick={onClose} className="p-2 -ml-2 text-[#A35100]">
+               <ChevronLeft size={24} />
+             </button>
+             <div className="flex items-center gap-2">
+               <Cpu size={14} className="text-[#A35100]" />
+               <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Vision Architect</span>
+             </div>
+           </div>
+           <button onClick={clearChat} className="text-[10px] font-bold uppercase text-red-600/50 px-2 py-1">
+             Clear
+           </button>
+        </header>
+      )}
 
-      <div className="flex-1 overflow-y-auto px-6 py-10 custom-scrollbar">
-        <div className="max-w-4xl mx-auto">
+      {/* Message Area */}
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 custom-scrollbar">
+        <div className="max-w-3xl mx-auto min-h-full flex flex-col">
           <AnimatePresence mode="popLayout">
             {messages.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-[60vh] flex flex-col items-center justify-center text-center opacity-30">
-                <Sparkles className="mb-6 text-[#A35100]" size={40} />
-                <h3 className="text-2xl font-serif italic">Awaiting your directive</h3>
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                className="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-20"
+              >
+                <Sparkles className="mb-4 text-[#A35100]" size={32} />
+                <h3 className="text-xl font-serif italic">State your architectural intent</h3>
               </motion.div>
             ) : (
-              messages.map((msg, i) => (
-                <ChatMessage 
-                   key={msg.id || i} 
-                   message={{ ...msg, streaming: streaming && i === messages.length - 1 && msg.role === 'ai' }} 
-                />
-              ))
+              <div className="space-y-4">
+                {messages.map((msg, i) => (
+                  <ChatMessage 
+                     key={msg.id || i} 
+                     message={{ ...msg, streaming: streaming && i === messages.length - 1 && msg.role === 'ai' }} 
+                  />
+                ))}
+              </div>
             )}
           </AnimatePresence>
-          <div ref={bottomRef} className="h-10" />
+          <div ref={bottomRef} className="h-20 flex-shrink-0" />
         </div>
       </div>
 
-      <div className="pt-2 pb-10 bg-gradient-to-t from-[#EBE0CF] via-[#EBE0CF] to-transparent">
-        <ChatInput onSend={sendMessage} disabled={streaming} />
+      {/* Input Section - Adjusted pb-28 for mobile tab switcher safety */}
+      <div className={`
+        flex-shrink-0 w-full px-4 z-30
+        ${isMobileView ? 'pb-28 pt-2' : 'pb-8 pt-4'} 
+        bg-gradient-to-t from-[#EBE0CF] via-[#EBE0CF] to-transparent
+      `}>
+        <div className="max-w-3xl mx-auto">
+          <ChatInput onSend={sendMessage} disabled={streaming} isMobile={isMobileView} />
+        </div>
       </div>
-
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #A3510020; border-radius: 10px; }
-      `}</style>
     </div>
   );
 }

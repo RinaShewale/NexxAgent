@@ -58,7 +58,7 @@ export async function createSandboxKey(sandboxId) {
         createdAt: Date.now(),
       }),
       "EX",
-      120
+      900
     );
   } catch (err) {
     console.error(

@@ -4,8 +4,13 @@ import { io } from 'socket.io-client';
 export function useTerminal(agentUrl, { onOutput } = {}) {
   const socketRef = useRef(null);
   const [connected, setConnected] = useState(false);
+  const [reconnectTrigger, setReconnectTrigger] = useState(0);
 
   const onOutputRef = useRef(onOutput);
+
+  const reconnect = useCallback(() => {
+    setReconnectTrigger((prev) => prev + 1);
+  }, []);
   useEffect(() => {
     onOutputRef.current = onOutput;
   }, [onOutput]);
@@ -166,7 +171,7 @@ export function useTerminal(agentUrl, { onOutput } = {}) {
       } catch (e) {}
       socketRef.current = null;
     };
-  }, [agentUrl]);
+  }, [agentUrl, reconnectTrigger]);
 
   const sendCommand = useCallback((data) => {
     if (socketRef.current?.connected) {
@@ -174,6 +179,6 @@ export function useTerminal(agentUrl, { onOutput } = {}) {
     }
   }, []);
 
-  return { connected, sendCommand };
+  return { connected, sendCommand, reconnect };
 }
 
