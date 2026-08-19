@@ -10,7 +10,12 @@ export async function startSandbox(prompt, retries = 6, delayMs = 2500) {
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     const controller = new AbortController();
-    const TIMEOUT_MS = 3 * 60 * 1000;
+
+    // IMPORTANT: must exceed the backend's waitForPodReady() worst-case
+    // duration (60 retries * 3000ms = 180s = 3 min) with a safety margin,
+    // otherwise the frontend aborts the request right as the backend is
+    // about to succeed, producing a false "timed out" error.
+    const TIMEOUT_MS = 4 * 60 * 1000; // 4 minutes
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     try {
@@ -86,7 +91,7 @@ export async function checkSandboxAlive(agentUrl) {
   try {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 3000);
-    
+
     const res = await fetch(`${agentUrl}/list-files`, { signal: controller.signal });
     clearTimeout(id);
     return res.ok;

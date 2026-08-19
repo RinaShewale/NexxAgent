@@ -7,17 +7,20 @@ import { createService, deleteService } from "../kubernetes/service.js";
 import { k8sCoreV1Api } from "../kubernetes/config.js";
 import { createSandboxKey, redis } from "../config/redis.js";
 
-const sleep = (ms = 3000) =>
+const sleep = (ms = 2000) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
 const isValidObjectId = (id) =>
     typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
 
 // Wait for pod ready
+// 60 retries * 2000ms = 120s (2 min) max wait — comfortably under the
+// frontend's 4-minute AbortController timeout in sandbox.js.
 async function waitForPodReady(podName) {
     let retries = 0;
+    const MAX_RETRIES = 60;
 
-    while (retries < 60) {
+    while (retries < MAX_RETRIES) {
         try {
             const response = await k8sCoreV1Api.readNamespacedPod({
                 name: podName,
@@ -180,7 +183,7 @@ export async function createSandbox(req, res) {
         console.log("Creating sandbox:", sandboxID);
 
         await Promise.all([
-            createPod(sandboxID),
+            createPod(sandboxID, project._id),
             createService(sandboxID),
         ]);
 

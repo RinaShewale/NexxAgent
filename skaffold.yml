@@ -4,7 +4,6 @@ kind: Config
 metadata:
   name: capstone
 
-
 build:
   tagPolicy:
     sha256: {}
@@ -12,9 +11,7 @@ build:
   local:
     push: false
 
-
   artifacts:
-
     # =====================
     # Sandbox Server
     # =====================
@@ -26,7 +23,6 @@ build:
         infer:
           - "**/*.js"
           - "**/*.json"
-
 
     # =====================
     # Router
@@ -40,7 +36,6 @@ build:
           - "**/*.js"
           - "**/*.json"
 
-
     # =====================
     # Agent
     # =====================
@@ -53,6 +48,17 @@ build:
           - "**/*.js"
           - "**/*.json"
 
+    # =====================
+    # Sync Agent
+    # =====================
+    - image: sync-agent
+      context: sandbox/sync-agent
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        infer:
+          - "**/*.js"
+          - "**/*.json"
 
     # =====================
     # Template React App
@@ -68,7 +74,6 @@ build:
           - "**/*.css"
           - "**/*.json"
 
-
     # =====================
     # AI Orchestration
     # =====================
@@ -82,7 +87,6 @@ build:
           - "**/*.mjs"
           - "**/*.json"
 
-
     # =====================
     # Auth Service
     # =====================
@@ -94,7 +98,6 @@ build:
         infer:
           - "**/*.js"
           - "**/*.json"
-
 
     # =====================
     # Notification Service
@@ -108,17 +111,13 @@ build:
           - "**/*.js"
           - "**/*.json"
 
-
-
 manifests:
   rawYaml:
-
     # =====================
     # RBAC + Secrets
     # =====================
     - k8s/rbac.yml
     - k8s/secrets.yml
-
 
     # =====================
     # Sandbox
@@ -126,13 +125,11 @@ manifests:
     - k8s/sandbox-deployment.yml
     - k8s/sandbox-service.yml
 
-
     # =====================
     # Router
     # =====================
     - k8s/router-deployment.yml
     - k8s/router-service.yml
-
 
     # =====================
     # AI
@@ -140,13 +137,11 @@ manifests:
     - k8s/ai-deployment.yml
     - k8s/ai-service.yml
 
-
     # =====================
     # Auth
     # =====================
     - k8s/auth-deployment.yml
     - k8s/auth-service.yml
-
 
     # =====================
     # Notification
@@ -154,17 +149,13 @@ manifests:
     - k8s/notification-deployment.yml
     - k8s/notification-service.yml
 
-
     # =====================
     # Ingress
     # =====================
     - k8s/ingress.yml
 
-
-
 deploy:
   kubectl: {}
-
 
 # =====================
 # Port Forwarding

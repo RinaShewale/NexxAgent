@@ -17,7 +17,7 @@ export async function RefreshTTL(sandboxId) {
   try {
     const result = await redis.expire(
       `sandbox:${sandboxId}`,
-      120
+      60 * 20
     );
 
     console.log(
