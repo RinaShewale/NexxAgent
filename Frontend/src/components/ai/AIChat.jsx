@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import useSandboxStore from '../../store/sandboxStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Trash2, Cpu, ChevronLeft, X } from 'lucide-react';
 import ChatMessage from './ChatMessage';
@@ -7,8 +8,19 @@ import { useAIStream } from '../../hooks/useAIStream';
 
 export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileView = false }) {
   const { messages, streaming, sendMessage, clearChat } = useAIStream(sandboxID);
+  const { initialPrompt, setInitialPrompt } = useSandboxStore();
   const bottomRef = useRef(null);
   const prevStreaming = useRef(streaming);
+  const autoSentRef = useRef(false);
+
+  // Auto-send the initial prompt from the landing page once, when sandboxID is available
+  useEffect(() => {
+    if (sandboxID && initialPrompt && !autoSentRef.current && !streaming) {
+      autoSentRef.current = true;
+      setInitialPrompt('');
+      sendMessage(initialPrompt);
+    }
+  }, [sandboxID, initialPrompt, streaming, sendMessage, setInitialPrompt]);
 
   useEffect(() => {
     if (prevStreaming.current === true && streaming === false) {

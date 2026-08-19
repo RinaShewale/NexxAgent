@@ -69,7 +69,7 @@ export default function PreviewPanel({ previewUrl, buildVersion }) {
       </div>
 
       {/* 2. DEVICE AREA: Uses max-width to ensure it never overflows parent */}
-      <div className="flex-1 w-full flex justify-center items-center p-4 md:p-10 overflow-hidden bg-transparent">
+      <div className="flex-1 w-full flex justify-center items-center p-4 md:p-10 overflow-hidden bg-transparent no-scrollbar">
         <motion.div 
           initial={false}
           animate={{ 
@@ -80,7 +80,7 @@ export default function PreviewPanel({ previewUrl, buildVersion }) {
           }}
           transition={{ type: "spring", damping: 25, stiffness: 120 }}
           className={`
-            bg-black relative shadow-2xl overflow-hidden
+            bg-black relative shadow-2xl overflow-hidden no-scrollbar
             /* Larger borders and rounding on desktop, smaller on mobile */
             rounded-[2rem] md:rounded-[2.5rem] 
             border-[6px] md:border-[8px] border-[#34170A]
@@ -92,6 +92,7 @@ export default function PreviewPanel({ previewUrl, buildVersion }) {
               key={reloadKey}
               src={iframeSrc}
               className="w-full h-full border-none bg-white no-scrollbar"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               title="Vision Preview"
             />
           ) : (
