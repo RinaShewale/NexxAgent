@@ -83,6 +83,22 @@ export async function startSandbox(prompt, retries = 6, delayMs = 2500) {
 }
 
 /**
+ * GET http://localhost/api/sandbox/projects
+ * Returns { success, projects: [{ _id, user, title, createdAt, updatedAt }] }
+ */
+export async function getProjects() {
+  const res = await fetch(`${BASE_URL}/sandbox/projects`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to fetch projects (${res.status}): ${text}`);
+  }
+  return res.json();
+}
+
+/**
  * Checks if the agent is responsive.
  * Note: agentUrl usually points to a different subdomain.
  */

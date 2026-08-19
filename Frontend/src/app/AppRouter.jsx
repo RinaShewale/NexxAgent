@@ -9,6 +9,7 @@ import Pricing from '../components/Home/pages/Pricing';
 import AppShell from '../components/Shells/AppShell'
 import LandingPage from '../components/Shells/LandingPage';
 import TemplateShowcase from '../components/Home/pages/TempleteShowcase';
+import HistoryPage from '../components/Shells/HistoryPage';
 
 
 
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       { path: "/login", element: <LoginPage /> },
        { path: "/shell", element: <AppShell /> },
         { path: "/dashboard", element: <LandingPage /> },
+        { path: "/history", element: <HistoryPage /> },
     ],
   },
 ]);
