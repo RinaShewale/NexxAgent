@@ -9,15 +9,18 @@ import EditorPanel from '../editor/EditorPanel';
 import PreviewPanel from '../preview/PreviewPanel';
 import TerminalPanel from '../terminal/TerminalPanel';
 import GeneratingPage from './GeneratingPage';
+import DeployButton from '../shared/DeployButton';
 
 
 export default function AppShell() {
-  const { sandboxID, agentUrl, previewUrl, viewState } = useSandboxStore();
+  const { sandboxID, projectId, agentUrl, previewUrl, viewState } = useSandboxStore();
   const { openFiles, activeFile, activeFileData, openFile, closeFile, updateContent, saveFile, setActiveFile, saveStatus } = useFileEditor(agentUrl);
-  const [activeTab, setActiveTab] = useState('preview'); 
+  const [activeTab, setActiveTab] = useState('preview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileFilesOpen, setMobileFilesOpen] = useState(false); // State for mobile file explorer
   const [buildVersion, setBuildVersion] = useState(0);
+
+  
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -41,24 +44,24 @@ export default function AppShell() {
 
   return (
     <div className="fixed inset-0 w-screen h-screen flex flex-col bg-[#FDF3E4] text-[#34170A] overflow-hidden z-[50]">
-    
+
 
       {/* 2. Workspace Area: Fills remaining height */}
       <div className="flex flex-1 overflow-hidden relative">
-        
+
         {/* Responsive Sidebar (AIChat) */}
-        <motion.aside 
+        <motion.aside
           initial={false}
-          animate={{ 
+          animate={{
             width: sidebarOpen ? (window.innerWidth < 1024 ? '100%' : 400) : 0,
             x: sidebarOpen ? 0 : -400,
-            opacity: sidebarOpen ? 1 : 0 
+            opacity: sidebarOpen ? 1 : 0
           }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="h-full border-r border-[#A35100]/10 bg-[#F7EDE0] lg:bg-[#F7EDE0]/50 backdrop-blur-xl absolute lg:relative z-[60] overflow-hidden"
         >
           <div className="w-full lg:w-[400px] h-full relative">
-            <button 
+            <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden absolute top-4 right-4 z-[70] p-2 bg-[#34170A] text-white rounded-full shadow-lg"
             >
@@ -70,17 +73,17 @@ export default function AppShell() {
 
         {/* Main Content (Editor/Preview) */}
         <main className="flex-1 relative flex flex-col p-3 md:p-4 lg:p-5 overflow-hidden min-w-0">
-          
+
           {/* Action Bar */}
           <div className="flex items-center justify-between mb-3 px-1 shrink-0 gap-2">
             <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
-              <button 
-                onClick={() => setSidebarOpen(!sidebarOpen)} 
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2.5 bg-white border border-[#A35100]/10 rounded-xl text-[#A35100] shadow-sm hover:bg-orange-50 transition-colors"
               >
                 <PanelLeft size={18} />
               </button>
-              
+
               <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-[#F7EDE0] border border-[#A35100]/5 rounded-xl text-[11px] opacity-70">
                 <Globe size={14} className="text-[#A35100] shrink-0" />
                 <span className="truncate max-w-[120px] md:max-w-[250px] font-mono">
@@ -89,10 +92,9 @@ export default function AppShell() {
               </div>
             </div>
 
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-[#34170A] hover:bg-[#A35100] text-[#FDF3E4] rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] transition-all active:scale-95 shadow-md shrink-0">
-              <Zap size={14} fill="currentColor" /> 
-              <span>Deploy Vision</span>
-            </button>
+
+            <DeployButton projectId={projectId} />
+
           </div>
 
           {/* Canvas Viewport */}
@@ -103,20 +105,20 @@ export default function AppShell() {
                   <PreviewPanel previewUrl={previewUrl} buildVersion={buildVersion} />
                 </motion.div>
               )}
-              
+
               {activeTab === 'code' && (
                 <motion.div key="c" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex h-full overflow-hidden relative">
-                  
+
                   {/* MOBILE FILE EXPLORER OVERLAY */}
                   <AnimatePresence>
                     {mobileFilesOpen && (
                       <>
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                           onClick={() => setMobileFilesOpen(false)}
                           className="absolute inset-0 bg-black/20 z-[65] md:hidden"
                         />
-                        <motion.div 
+                        <motion.div
                           initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
                           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                           className="absolute inset-y-0 left-0 w-72 bg-[#FDF3E4] z-[70] md:hidden shadow-2xl border-r border-[#A35100]/20 flex flex-col"
@@ -144,7 +146,7 @@ export default function AppShell() {
                   <div className="flex-1 flex flex-col min-w-0">
                     {/* MOBILE-ONLY EXPLORER TRIGGER */}
                     <div className="md:hidden flex items-center gap-2 p-2 bg-[#F7EDE0]/50 border-b border-[#A35100]/5">
-                      <button 
+                      <button
                         onClick={() => setMobileFilesOpen(true)}
                         className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#A35100]/10 rounded-lg text-[10px] font-bold text-[#A35100] uppercase"
                       >
@@ -157,9 +159,9 @@ export default function AppShell() {
                       </span>
                     </div>
 
-                    <EditorPanel 
-                      openFiles={openFiles} activeFile={activeFile} 
-                      activeFileData={activeFileData} onSelect={setActiveFile} 
+                    <EditorPanel
+                      openFiles={openFiles} activeFile={activeFile}
+                      activeFileData={activeFileData} onSelect={setActiveFile}
                       onClose={closeFile} onContentChange={updateContent}
                       onSave={saveFile} saveStatus={saveStatus}
                     />
@@ -182,9 +184,8 @@ export default function AppShell() {
                 <button
                   key={v.id}
                   onClick={() => setActiveTab(v.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[9px] font-bold uppercase tracking-[0.15em] transition-all ${
-                    activeTab === v.id ? 'bg-[#A35100] text-white' : 'text-white/40 hover:text-white/70'
-                  }`}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[9px] font-bold uppercase tracking-[0.15em] transition-all ${activeTab === v.id ? 'bg-[#A35100] text-white' : 'text-white/40 hover:text-white/70'
+                    }`}
                 >
                   {v.icon}
                   <span className={activeTab === v.id ? 'block' : 'hidden md:block'}>

@@ -192,6 +192,11 @@ export async function createSandbox(req, res) {
         // Start the session TTL only now that the sandbox is confirmed ready.
         await createSandboxKey(sandboxID);
 
+        // Track this sandbox on the project so it can be cleaned up
+        // automatically once a production deploy succeeds.
+        project.sandboxID = sandboxID;
+        await project.save();
+
         return res.status(201).json({
             success: true,
             message: "Sandbox created successfully",

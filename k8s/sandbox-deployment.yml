@@ -56,6 +56,14 @@ spec:
                   name: jwt
                   key: JWT_SECRET
 
+            # Plain (non-secret) value — the current Cloudflare Quick
+            # Tunnel base URL. Quick Tunnel gives a NEW random URL
+            # every time it restarts, so you must update this value
+            # and re-apply this file (or `kubectl set env ...`) each
+            # time you restart `cloudflared tunnel --url ...`.
+            - name: TUNNEL_BASE_URL
+              value: "https://clean-construct-shelf-accurate.trycloudflare.com"
+
           resources:
             requests:
               cpu: "250m"

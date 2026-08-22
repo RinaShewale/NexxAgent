@@ -151,40 +151,6 @@ mongodb+srv://rinashewale6_db_user:QcQZX3snY7MdHyke@nexagent.lhwa88n.mongodb.net
 
 
 
+**Issue:** Production projects use dynamic subdomains like `projectId.app.localhost`, which only work on the local machine. Cloudflare Quick Tunnel provides one temporary URL and cannot dynamically route unlimited project subdomains without hardcoding each project.
 
-
-
-
-ckeck auth folder there is not have token in cookeies fic that fix that login issues on frontend also
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-My app's sandbox backend is failing to start. The frontend calls startSandbox() in sandbox.js, triggered from useSandbox.js (triggerStartSandbox), which is called from LandingPage.jsx on mount. It retries twice (sandbox.js:26) and then fails with:
-
-Error: Sandbox backend service returned 502 Bad Gateway. The backend service may still be starting up or unreachable. Please verify backend server status.
-
-Please help me debug and fix this:
-
-Check whether the backend/sandbox server process is actually running and listening on the expected port.
-Check the URL/endpoint sandbox.js is calling — verify it matches the backend's actual host/port (common cause: frontend pointing to localhost while backend runs in a container, or a proxy misconfiguration).
-Check for CORS or reverse-proxy issues that could produce a 502 instead of a direct connection error.
-Increase the retry/backoff timeout in sandbox.js:26 in case the backend just needs more time to cold-start, and add clearer logging of the actual response (status, body, headers) on failure.
-Add a health-check endpoint on the backend and have the frontend poll it before attempting the real sandbox request, so we get an earlier, clearer failure message.
-
-Show me the relevant code in sandbox.js, useSandbox.js, and the backend startup config so we can pinpoint why it's unreachable.
+**Solution:** Use Cloudflare Tunnel with a custom domain and wildcard DNS (`*.domain.com`) to dynamically route all production projects.

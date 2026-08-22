@@ -74,6 +74,15 @@ build:
           - "**/*.css"
           - "**/*.json"
 
+
+    # =====================
+    # Production Website
+    # =====================
+    - image: production
+      context: sandbox/production
+      docker:
+        dockerfile: Dockerfile     
+
     # =====================
     # AI Orchestration
     # =====================

@@ -28,6 +28,14 @@ spec:
                 port:
                   number: 3000
 
+          - path: /api/deployment
+            pathType: Prefix
+            backend:
+              service:
+                name: sandbox-service
+                port:
+                  number: 3000
+
           - path: /api/ai
             pathType: Prefix
             backend:
