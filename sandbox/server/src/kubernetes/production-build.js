@@ -107,16 +107,15 @@ export async function createProductionBuildJob(projectId) {
                                 npm install
 
                                 echo "🏗️ Running Vite production build..."
-                                echo "Base path: /p/$PROJECT_ID/"
+                                echo "Base path: /$PROJECT_ID/production/"
 
-                                # --base tells Vite this site will be served from
-                                # /p/<projectId>/ instead of the domain root "/".
-                                # Without this, the built index.html references
-                                # assets like "/assets/xyz.js" (absolute from
-                                # domain root), which 404s once nginx-ingress
-                                # routes by path prefix instead of subdomain —
-                                # that's what was causing the blank page.
-                                npm run build -- --base=/p/$PROJECT_ID/
+                                # --base must match the S3 key structure that
+                                # upload-production.mjs uploads to:
+                                #   s3://nexagent-bucket/<projectId>/production/...
+                                # The S3 static website endpoint serves files
+                                # from that same path, so index.html's asset
+                                # URLs need this exact prefix or they'll 404.
+                                npm run build -- --base=/$PROJECT_ID/production/
 
                                 echo "✅ Production build completed"
 

@@ -1,15 +1,37 @@
 // production-deployer.js
+//
+// SIMPLIFIED: production sites are now served directly from S3
+// static website hosting, not from a Kubernetes Deployment/Service/
+// Ingress. This means:
+//   - No "production" namespace, no RBAC for it, no Ingress, no pods
+//     to keep alive for deployed sites.
+//   - The site is live the instant the build finishes uploading to
+//     S3 — genuinely permanent, independent of this backend, this
+//     cluster, Skaffold, or your laptop being on at all.
+//   - production.js / production.service.js / production.ingress.js
+//     are no longer used by this file (kept only if you still want
+//     them for reference — safe to delete).
 
-import { k8sBatchV1Api, k8sCoreV1Api, ensureProductionEnvironment } from "./config.js";
+import { k8sBatchV1Api, k8sCoreV1Api } from "./config.js";
 
 import Project from "../models/project.model.js";
 
-import { createProductionDeployment } from "./production.js";
-import { createProductionService } from "./production.service.js";
-import { createProductionIngress } from "./production.ingress.js";
-
 import { deletePod } from "./pod.js";
 import { deleteService } from "./service.js";
+
+
+// --------------------------------
+// S3 static website endpoint
+// --------------------------------
+//
+// Set S3_WEBSITE_ENDPOINT in your env once you've enabled static
+// website hosting on the bucket, e.g.:
+//   nexagent-bucket.s3-website-ap-southeast-1.amazonaws.com
+// (no "http://" prefix — added below)
+
+const S3_WEBSITE_ENDPOINT =
+    process.env.S3_WEBSITE_ENDPOINT ||
+    "nexagent-bucket.s3-website-ap-southeast-1.amazonaws.com";
 
 
 // --------------------------------
@@ -36,10 +58,6 @@ async function waitForBuildJob(jobName) {
                 response;
 
 
-            // ----------------------------
-            // Build successful
-            // ----------------------------
-
             if (
                 job.status?.succeeded &&
                 job.status.succeeded >= 1
@@ -52,13 +70,6 @@ async function waitForBuildJob(jobName) {
                 return "completed";
             }
 
-
-            // ----------------------------
-            // Build failed (only treat as final once Kubernetes
-            // has exhausted backoffLimit retries — checking the
-            // "Failed" condition avoids reporting failure while
-            // a retry pod is still starting up)
-            // ----------------------------
 
             const failedCondition =
                 job.status?.conditions?.find(
@@ -108,12 +119,7 @@ async function waitForBuildJob(jobName) {
 // --------------------------------
 // Delete the build ConfigMap once the Job is done with it
 // --------------------------------
-//
-// The Job itself auto-deletes via ttlSecondsAfterFinished, but the
-// ConfigMap it mounts does not — it has to be deleted explicitly or
-// it accumulates forever (one per deploy attempt). Best-effort: a
-// failure here should never fail the overall deploy.
-//
+
 async function cleanupBuildConfigMap(projectId) {
 
     const configMapName =
@@ -137,7 +143,6 @@ async function cleanupBuildConfigMap(projectId) {
             error?.statusCode ||
             error?.response?.statusCode;
 
-        // Already gone is fine — nothing to clean up.
         if (statusCode !== 404) {
             console.error(
                 `Failed to delete build ConfigMap ${configMapName}:`,
@@ -151,17 +156,7 @@ async function cleanupBuildConfigMap(projectId) {
 // --------------------------------
 // Cleanup sandbox after a successful deploy
 // --------------------------------
-//
-// Once the production Deployment/Service/Ingress exist (in the
-// "production" namespace), the temporary dev sandbox for this
-// project — which lives in "default" — is no longer needed.
-// The production Deployment is fully independent (separate
-// namespace, no Skaffold tracking, no dependency on the sandbox
-// pod), so it's safe to tear the sandbox down here.
-//
-// Best-effort: failures here should never flip the deploy itself to
-// "failed" — the site is already live at this point.
-//
+
 async function cleanupProjectSandbox(project) {
 
     const sandboxID = project.sandboxID;
@@ -209,27 +204,12 @@ export async function deployProduction(
 
 
         // --------------------------------
-        // Ensure "production" namespace + aws secret exist
-        // --------------------------------
-        //
-        // Runs before anything else so the very first deploy on a
-        // fresh cluster doesn't fail with "namespace not found" or
-        // "secret not found".
-
-        await ensureProductionEnvironment();
-
-
-        // --------------------------------
         // Wait for build
         // --------------------------------
 
         const buildStatus =
             await waitForBuildJob(jobName);
 
-
-        // --------------------------------
-        // Build failed
-        // --------------------------------
 
         if (buildStatus === "failed") {
 
@@ -246,75 +226,28 @@ export async function deployProduction(
         }
 
 
-        // Build succeeded — the ConfigMap has done its job, safe to
-        // remove now (independent of the rest of the deploy below).
         await cleanupBuildConfigMap(projectId);
 
 
         // --------------------------------
-        // Create Deployment
-        // --------------------------------
-
-        console.log(
-            `🚀 Creating production Deployment: ${projectId}`
-        );
-
-
-        const deploymentName =
-            await createProductionDeployment(
-                projectId
-            );
-
-
-        // --------------------------------
-        // Create Service
-        // --------------------------------
-
-        console.log(
-            `🌐 Creating production Service: ${projectId}`
-        );
-
-
-        const serviceName =
-            await createProductionService(
-                projectId
-            );
-
-
-        // --------------------------------
-        // Create Ingress
-        // --------------------------------
-
-        console.log(
-            `🌍 Creating production Ingress: ${projectId}`
-        );
-
-
-        const { ingressName, productionPath } =
-            await createProductionIngress(
-                projectId
-            );
-
-
-        // --------------------------------
-        // Build the full production URL
+        // Build the S3 static website URL
         // --------------------------------
         //
-        // With Cloudflare Quick Tunnel there's no fixed domain —
-        // just whatever random hostname the tunnel currently has.
-        // TUNNEL_BASE_URL is set manually in sandbox-deployment.yml
-        // and must be updated whenever `cloudflared tunnel --url`
-        // is restarted (its hostname changes every time).
-        //
-        // Falls back to localhost so local-only testing (no tunnel
-        // running) still produces a working link on your own machine.
-
-        const tunnelBaseUrl =
-            process.env.TUNNEL_BASE_URL ||
-            "http://localhost";
+        // No Kubernetes Deployment/Service/Ingress needed — the
+        // build already uploaded files to
+        //   s3://nexagent-bucket/<projectId>/production/
+        // via upload-production.mjs, and S3 static website hosting
+        // serves that path directly. This URL is live immediately
+        // and works permanently, independent of anything running
+        // locally.
 
         const productionUrl =
-            `${tunnelBaseUrl}${productionPath}`;
+            `http://${S3_WEBSITE_ENDPOINT}/${projectId}/production/`;
+
+
+        console.log(
+            `🌍 Production site live at: ${productionUrl}`
+        );
 
 
         // --------------------------------
@@ -336,22 +269,22 @@ export async function deployProduction(
         // --------------------------------
 
         project.deploymentStatus = "deployed";
-        project.deploymentName = deploymentName;
-        project.serviceName = serviceName;
-        project.ingressName = ingressName;
         project.productionUrl = productionUrl;
         project.deployedAt = new Date();
+
+        // No Kubernetes resources created for production anymore —
+        // clear these out in case they were set by an older deploy.
+        project.deploymentName = null;
+        project.serviceName = null;
+        project.ingressName = null;
 
 
         // --------------------------------
         // Tear down the temporary sandbox
         // --------------------------------
         //
-        // The production Deployment is self-sufficient at this point —
-        // it lives in its own namespace, Kubernetes keeps it running
-        // independently of the sandbox, Skaffold, or this backend
-        // process. Free up the sandbox pod's resources now that it's
-        // no longer needed.
+        // Safe to do immediately — the production site is already
+        // live on S3, fully independent of the sandbox pod.
 
         await cleanupProjectSandbox(project);
 

@@ -135,6 +135,42 @@ const s3Client = new S3Client({
     }
 });
 
+// --------------------------------
+// Content-Type lookup by file extension
+// --------------------------------
+//
+// S3's PutObjectCommand does NOT infer Content-Type automatically.
+// Without this, every uploaded file defaults to
+// "application/octet-stream", which makes browsers download
+// index.html instead of rendering it, and JS/CSS files fail to
+// execute/apply correctly even if the browser does render the HTML.
+
+const CONTENT_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".mjs": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".ttf": "font/ttf",
+    ".eot": "application/vnd.ms-fontobject",
+    ".txt": "text/plain; charset=utf-8",
+    ".map": "application/json; charset=utf-8",
+};
+
+function getContentType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    return CONTENT_TYPES[ext] || "application/octet-stream";
+}
+
 function getFiles(directory) {
 
     const result = [];
@@ -194,17 +230,21 @@ async function uploadProduction() {
         const fileContent =
             fs.readFileSync(filePath);
 
+        const contentType =
+            getContentType(filePath);
+
         const command =
             new PutObjectCommand({
                 Bucket: bucketName,
                 Key: s3Key,
-                Body: fileContent
+                Body: fileContent,
+                ContentType: contentType,
             });
 
         await s3Client.send(command);
 
         console.log(
-            \`Uploaded: \${s3Key}\`
+            \`Uploaded: \${s3Key} (\${contentType})\`
         );
     }
 

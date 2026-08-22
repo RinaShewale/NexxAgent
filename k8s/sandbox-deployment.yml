@@ -56,13 +56,13 @@ spec:
                   name: jwt
                   key: JWT_SECRET
 
-            # Plain (non-secret) value — the current Cloudflare Quick
-            # Tunnel base URL. Quick Tunnel gives a NEW random URL
-            # every time it restarts, so you must update this value
-            # and re-apply this file (or `kubectl set env ...`) each
-            # time you restart `cloudflared tunnel --url ...`.
-            - name: TUNNEL_BASE_URL
-              value: "https://clean-construct-shelf-accurate.trycloudflare.com"
+            # Plain (non-secret) value — the S3 static website hosting
+            # endpoint. Production sites are served directly from S3
+            # (not Kubernetes), so this never changes once set —
+            # unlike the old Cloudflare Tunnel URL, there's no need
+            # to update this on every restart.
+            - name: S3_WEBSITE_ENDPOINT
+              value: "nexagent-bucket.s3-website.ap-south-1.amazonaws.com"
 
           resources:
             requests:
