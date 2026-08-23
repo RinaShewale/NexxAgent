@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import useSandboxStore from '../../store/sandboxStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Trash2, Cpu, ChevronLeft, X } from 'lucide-react';
+// Changed Sparkles to Command
+import { Command, Cpu, ChevronLeft } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useAIStream } from '../../hooks/useAIStream';
@@ -13,7 +14,6 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
   const prevStreaming = useRef(streaming);
   const autoSentRef = useRef(false);
 
-  // Auto-send the initial prompt from the landing page once, when sandboxID is available
   useEffect(() => {
     if (sandboxID && initialPrompt && !autoSentRef.current && !streaming) {
       autoSentRef.current = true;
@@ -36,7 +36,12 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
   return (
     <div className="flex flex-col h-full bg-[#EBE0CF] relative text-[#34170A] font-sans overflow-hidden">
       
-      {/* Dynamic Header */}
+      {/* CSS to hide scrollbar while maintaining scroll functionality */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
+
       {!isMobileView ? (
         <header className="h-20 px-6 md:px-8 border-b border-[#A35100]/10 flex items-center justify-between bg-[#FDF3E4]/60 backdrop-blur-md z-20 flex-shrink-0">
           <div className="flex items-center gap-4">
@@ -46,7 +51,6 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
               <span className="text-base font-serif italic leading-none">Collective Intelligence</span>
             </div>
           </div>
-         
         </header>
       ) : (
         <header className="h-14 flex items-center justify-between px-4 border-b border-[#A35100]/10 bg-[#FDF3E4]/40 flex-shrink-0">
@@ -65,8 +69,8 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
         </header>
       )}
 
-      {/* Message Area */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 custom-scrollbar">
+      {/* Added 'hide-scrollbar' class here */}
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 hide-scrollbar">
         <div className="max-w-3xl mx-auto min-h-full flex flex-col">
           <AnimatePresence mode="popLayout">
             {messages.length === 0 ? (
@@ -75,7 +79,8 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
                 animate={{ opacity: 1, y: 0 }} 
                 className="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-20"
               >
-                <Sparkles className="mb-4 text-[#A35100]" size={32} />
+                {/* Changed Sparkles to Command */}
+                <Command className="mb-4 text-[#A35100]" size={32} />
                 <h3 className="text-xl font-serif italic">State your architectural intent</h3>
               </motion.div>
             ) : (
@@ -93,7 +98,6 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
         </div>
       </div>
 
-      {/* Input Section - Adjusted pb-28 for mobile tab switcher safety */}
       <div className={`
         flex-shrink-0 w-full px-4 z-30
         ${isMobileView ? 'pb-28 pt-2' : 'pb-8 pt-4'} 
