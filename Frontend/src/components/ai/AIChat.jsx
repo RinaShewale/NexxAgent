@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import useSandboxStore from '../../store/sandboxStore';
 import { motion, AnimatePresence } from 'framer-motion';
-// Changed Sparkles to Command
 import { Command, Cpu, ChevronLeft } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useAIStream } from '../../hooks/useAIStream';
+import { useAuth } from '../../hooks/useAuth'; // Added import
 
 export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileView = false }) {
   const { messages, streaming, sendMessage, clearChat } = useAIStream(sandboxID);
   const { initialPrompt, setInitialPrompt } = useSandboxStore();
+  const { user } = useAuth(); // Get user data
   const bottomRef = useRef(null);
   const prevStreaming = useRef(streaming);
   const autoSentRef = useRef(false);
@@ -36,7 +37,6 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
   return (
     <div className="flex flex-col h-full bg-[#EBE0CF] relative text-[#34170A] font-sans overflow-hidden">
       
-      {/* CSS to hide scrollbar while maintaining scroll functionality */}
       <style dangerouslySetInnerHTML={{__html: `
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -69,7 +69,6 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
         </header>
       )}
 
-      {/* Added 'hide-scrollbar' class here */}
       <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 hide-scrollbar">
         <div className="max-w-3xl mx-auto min-h-full flex flex-col">
           <AnimatePresence mode="popLayout">
@@ -79,7 +78,6 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
                 animate={{ opacity: 1, y: 0 }} 
                 className="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-20"
               >
-                {/* Changed Sparkles to Command */}
                 <Command className="mb-4 text-[#A35100]" size={32} />
                 <h3 className="text-xl font-serif italic">State your architectural intent</h3>
               </motion.div>
@@ -88,6 +86,7 @@ export default function AIChat({ sandboxID, onBuildComplete, onClose, isMobileVi
                 {messages.map((msg, i) => (
                   <ChatMessage 
                      key={msg.id || i} 
+                     user={user} // Pass user down
                      message={{ ...msg, streaming: streaming && i === messages.length - 1 && msg.role === 'ai' }} 
                   />
                 ))}

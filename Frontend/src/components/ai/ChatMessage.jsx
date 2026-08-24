@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// Changed Sparkles to Command
 import { Command, User, Copy, Check, ChevronDown, ChevronRight, FileJson, FileCode, CheckCircle2, Wrench } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -65,7 +64,7 @@ const ActionHistory = ({ content }) => {
   );
 };
 
-export default function ChatMessage({ message }) {
+export default function ChatMessage({ message, user }) { // Added user prop
   const isUser = message.role === 'user';
   const isSystemAction = !isUser && (message.content.includes('/') || message.content.includes('listing files'));
   const [copied, setCopied] = useState(false);
@@ -84,11 +83,29 @@ export default function ChatMessage({ message }) {
     >
       <div className={`flex gap-6 w-full ${isUser ? 'flex-row-reverse max-w-[90%]' : 'flex-row max-w-full'}`}>
         
-        <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center mt-1 border shadow-sm transition-all ${
-          isUser ? 'bg-[#34170A] border-[#34170A]' : 'bg-[#FDF3E4] border-[#A35100]/10'
-        }`}>
-          {/* Changed Sparkles to Command icon */}
-          {isUser ? <User size={18} className="text-[#FDF3E4]" /> : <Command size={18} className="text-[#A35100]" />}
+        {/* AVATAR SECTION */}
+        <div className="flex-shrink-0 mt-1">
+          {isUser ? (
+            /* User Avatar Style matching Navbar */
+            <div className="p-[2px] rounded-full border border-[#B55500]">
+              {user?.avatar ? (
+                <img 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  className="w-9 h-9 rounded-full object-cover" 
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-[#34170A] flex items-center justify-center">
+                   <User size={18} className="text-[#FDF3E4]" />
+                </div>
+              )}
+            </div>
+          ) : (
+            /* AI Icon Style */
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center border border-[#A35100]/10 bg-[#FDF3E4] shadow-sm">
+              <Command size={18} className="text-[#A35100]" />
+            </div>
+          )}
         </div>
 
         <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} min-w-0 flex-1`}>
@@ -132,6 +149,8 @@ export default function ChatMessage({ message }) {
             )}
             {message.streaming && <ProcessingIndicator />}
           </div>
+          
+       
         </div>
       </div>
     </motion.div>
