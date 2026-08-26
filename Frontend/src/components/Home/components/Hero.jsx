@@ -1,17 +1,30 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
   const container = useRef();
+  const navigate = useNavigate();
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.5 });
+      const tl = gsap.timeline({ 
+        delay: 0.5,
+        // This ensures the container becomes visible only when the animation starts
+        onStart: () => {
+          gsap.set(container.current, { autoAlpha: 1 });
+        }
+      });
 
-      tl.set(container.current, { autoAlpha: 1 })
-      
-      // --- DESKTOP ANIMATIONS (Logic strictly preserved) ---
-      .fromTo(".l-stem", 
+      // 1. PRE-SET: Force initial states to prevent "flashing"
+      gsap.set(".l-stem", { scaleY: 0 });
+      gsap.set(".stroke-left, .stroke-right", { scaleX: 0 });
+      gsap.set(".name-left, .name-right, .sub-label, .m-subtitle, .m-footer", { opacity: 0 });
+      gsap.set(".m-title-inner", { y: "115%" });
+      gsap.set(".m-btn-container", { scale: 0.9, opacity: 0 });
+
+      // 2. DESKTOP ANIMATIONS (Logic strictly preserved)
+      tl.fromTo(".l-stem", 
         { scaleY: 0 }, 
         { scaleY: 1, transformOrigin: "center", duration: 1.5, ease: "expo.inOut" }
       )
@@ -24,7 +37,7 @@ const Hero = () => {
       .fromTo(".name-right", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 1.2, ease: "power4.out" }, "-=1")
       .fromTo(".sub-label", { opacity: 0 }, { opacity: 0.6, duration: 1, stagger: 0.1 }, "-=0.5")
 
-      // --- PREMIUM MOBILE ANIMATIONS ---
+      // 3. PREMIUM MOBILE ANIMATIONS
       .fromTo(".m-subtitle", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1 }, 0.3)
       .fromTo(".m-title-inner", 
         { y: "115%" }, 
@@ -39,9 +52,15 @@ const Hero = () => {
     return () => ctx.revert();
   }, []);
 
-  const themeColor = "#A35100"; // Primary Theme
-  const highlightColor = "#34170A"; // Your requested dark color
+  const themeColor = "#A35100"; 
+  const highlightColor = "#34170A"; 
   const bgColor = "#FDF3E4";   
+
+  const handleNav = (path = '/dashboard') => {
+    navigate(path);
+  };
+
+  const itemStyle = "cursor-pointer transition-all duration-300 hover:opacity-100 hover:scale-105 active:scale-95";
 
   return (
     <section 
@@ -51,76 +70,66 @@ const Hero = () => {
         backgroundColor: bgColor, 
         color: themeColor, 
         fontFamily: "'Inter', sans-serif",
+        // Crucial: Keep hidden via CSS initially. GSAP autoAlpha will toggle this.
         opacity: 0,
         visibility: 'hidden'
       }}
     >
-      {/* ----------------- MOBILE VIEW (NexAgent Style) ----------------- */}
+      {/* ----------------- MOBILE VIEW ----------------- */}
       <div className="md:hidden flex flex-col items-center justify-center w-full px-8 text-center h-full gap-12">
-        
-        {/* Top Subtitle */}
-        <p className="m-subtitle text-[14px] italic font-light tracking-wide opacity-80">
+        <p className="m-subtitle text-[14px] italic font-light tracking-wide">
           Creative Developer — 2025
         </p>
-
-        {/* Main Headline with Masking Effect */}
         <div className="flex flex-col items-center leading-[1.1]">
-          <div className="overflow-hidden py-1 px-2">
-            <h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight">Create a</h1>
-          </div>
-          <div className="overflow-hidden py-1 px-2">
-            <h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight">personalized</h1>
-          </div>
-          <div className="overflow-hidden py-1 px-2">
-            <h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight" style={{ color: highlightColor }}>
-              experience
-            </h1>
-          </div>
-          <div className="overflow-hidden py-1 px-2">
-            <h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight">with code.</h1>
-          </div>
+          <div className="overflow-hidden py-1 px-2"><h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight">Create a</h1></div>
+          <div className="overflow-hidden py-1 px-2"><h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight">personalized</h1></div>
+          <div className="overflow-hidden py-1 px-2"><h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight" style={{ color: highlightColor }}>experience</h1></div>
+          <div className="overflow-hidden py-1 px-2"><h1 className="m-title-inner text-[11vw] font-extrabold tracking-tight">with code.</h1></div>
         </div>
-
-        {/* Button and Footer */}
         <div className="m-btn-container w-full flex flex-col items-center gap-6 mt-4">
           <button 
-            className="w-full max-w-[280px] py-5 rounded-xl text-[13px] font-bold tracking-[0.2em] uppercase transition-all active:scale-95 shadow-lg"
+            onClick={() => handleNav('/dashboard')} 
+            className="w-full max-w-[280px] py-5 rounded-xl text-[13px] font-bold tracking-[0.2em] uppercase transition-all active:scale-95 shadow-lg" 
             style={{ backgroundColor: themeColor, color: bgColor }}
           >
             Get Started
           </button>
-          
-          <p className="m-footer text-[10px] uppercase tracking-[0.25em] font-medium opacity-40">
-            Available on desktop only
-          </p>
+          <p className="m-footer text-[10px] uppercase tracking-[0.25em] font-medium">Available on desktop only</p>
         </div>
       </div>
 
 
-      {/* ----------------- DESKTOP ONLY VIEW (Strictly Unchanged) ----------------- */}
+      {/* ----------------- DESKTOP ONLY VIEW ----------------- */}
       <div className="hidden md:flex relative w-full max-w-[1400px] h-full items-center justify-center">
-        <div 
-          className="l-stem absolute left-1/2 -translate-x-1/2 w-[6px] h-[37vh] bg-[#A35100]" 
-          style={{ transform: 'scaleY(0)', transformOrigin: 'center' }} 
-        />
+        <div className="l-stem absolute left-1/2 -translate-x-1/2 w-[6px] h-[37vh] bg-[#A35100]" />
+        
         <div className="absolute right-[50%] flex flex-col items-end mr-[5px]">
-          <div className="sub-label flex gap-16 mb-[1vw] mr-[4vw] text-[13px] font-light text-right leading-tight tracking-wider uppercase" style={{ opacity: 0 }}>
-            <div><p>Creative</p><p>Developer</p></div>
-            <div><p>UX/UI</p><p>Designer</p></div>
+          <div className="sub-label flex gap-16 mb-[1vw] mr-[4vw] text-[13px] font-light text-right leading-tight tracking-wider uppercase">
+            <div onClick={() => handleNav('/dashboard')} className={itemStyle}>
+              <p>Creative</p><p>Developer</p>
+            </div>
+            <div onClick={() => handleNav('/dashboard')} className={itemStyle}>
+              <p>UX/UI</p><p>Designer</p>
+            </div>
           </div>
-          <div className="name-left relative -translate-y-[-1.2vw] mr-[2vw]" style={{ opacity: 0 }}>
+          <div className="name-left relative -translate-y-[-1.2vw] mr-[2vw]">
              <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] ">BEYOND</h1>
           </div>
-          <div className="stroke-left absolute bottom-[-3vw] right-[-5px] w-[4vw] h-[7px] bg-[#A35100] origin-right" style={{ transform: 'scaleX(0)' }} />
+          <div className="stroke-left absolute bottom-[-3vw] right-[-5px] w-[4vw] h-[7px] bg-[#A35100] origin-right" />
         </div>
+
         <div className="absolute left-[50%] flex flex-col items-start ml-[5px]">
-          <div className="stroke-right absolute top-[4vw] left-[-8px] w-[4vw] h-[7px] bg-[#A35100] origin-left z-10" style={{ transform: 'scaleX(0)' }} />
-          <div className="name-right -translate-y-[6vw] ml-[2vw]" style={{ opacity: 0 }}>
+          <div className="stroke-right absolute top-[4vw] left-[-8px] w-[4vw] h-[7px] bg-[#A35100] origin-left z-10" />
+          <div className="name-right -translate-y-[6vw] ml-[2vw]">
              <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] ">CREATE</h1>
           </div>
-          <div className="sub-label flex gap-16 mt-[-3vw] ml-[5vw] text-[15px] font-light leading-snug tracking-normal" style={{ opacity: 0 }}>
-            <div><p>Located in</p><p>Venice</p></div>
-            <div><p>Working</p><p>worldwide</p></div>
+          <div className="sub-label flex gap-16 mt-[-3vw] ml-[5vw] text-[15px] font-light leading-snug tracking-normal">
+            <div onClick={() => handleNav('/dashboard')} className={itemStyle}>
+              <p>Located in</p><p>Venice</p>
+            </div>
+            <div onClick={() => handleNav('/dashboard')} className={itemStyle}>
+              <p>Working</p><p>worldwide</p>
+            </div>
           </div>
         </div>
       </div>
