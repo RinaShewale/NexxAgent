@@ -1,18 +1,9 @@
 // production-deployer.js
-//
-// SIMPLIFIED: production sites are now served directly from S3
-// static website hosting, not from a Kubernetes Deployment/Service/
-// Ingress. This means:
-//   - No "production" namespace, no RBAC for it, no Ingress, no pods
-//     to keep alive for deployed sites.
-//   - The site is live the instant the build finishes uploading to
-//     S3 — genuinely permanent, independent of this backend, this
-//     cluster, Skaffold, or your laptop being on at all.
-//   - production.js / production.service.js / production.ingress.js
-//     are no longer used by this file (kept only if you still want
-//     them for reference — safe to delete).
 
-import { k8sBatchV1Api, k8sCoreV1Api } from "./config.js";
+import {
+    k8sBatchV1Api,
+    k8sCoreV1Api,
+} from "./config.js";
 
 import Project from "../models/project.model.js";
 
@@ -20,43 +11,49 @@ import { deletePod } from "./pod.js";
 import { deleteService } from "./service.js";
 
 
-// --------------------------------
-// S3 static website endpoint
-// --------------------------------
-//
-// Set S3_WEBSITE_ENDPOINT in your env once you've enabled static
-// website hosting on the bucket, e.g.:
-//   nexagent-bucket.s3-website-ap-southeast-1.amazonaws.com
-// (no "http://" prefix — added below)
+// ==================================================
+// BUILD PRODUCTION URL
+// ==================================================
 
-const S3_WEBSITE_ENDPOINT =
-    process.env.S3_WEBSITE_ENDPOINT ||
-    "nexagent-bucket.s3-website-ap-southeast-1.amazonaws.com";
+function buildProductionUrl(projectId) {
+
+    return `https://nexagent-${projectId}.netlify.app/`;
+}
 
 
-// --------------------------------
-// Wait for Build Job
-// --------------------------------
+// ==================================================
+// WAIT FOR BUILD JOB
+// ==================================================
 
 async function waitForBuildJob(jobName) {
 
     const MAX_RETRIES = 120;
+
     const INTERVAL = 3000;
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+
+    for (
+        let attempt = 0;
+        attempt < MAX_RETRIES;
+        attempt++
+    ) {
 
         try {
 
             const response =
                 await k8sBatchV1Api.readNamespacedJob({
                     name: jobName,
+
                     namespace: "default",
                 });
 
 
-            const job =
-                response;
+            const job = response;
 
+
+            // ------------------------------------------
+            // SUCCESS
+            // ------------------------------------------
 
             if (
                 job.status?.succeeded &&
@@ -71,12 +68,17 @@ async function waitForBuildJob(jobName) {
             }
 
 
+            // ------------------------------------------
+            // FAILED
+            // ------------------------------------------
+
             const failedCondition =
                 job.status?.conditions?.find(
-                    (c) =>
-                        c.type === "Failed" &&
-                        c.status === "True"
+                    (condition) =>
+                        condition.type === "Failed" &&
+                        condition.status === "True"
                 );
+
 
             if (failedCondition) {
 
@@ -88,10 +90,13 @@ async function waitForBuildJob(jobName) {
             }
 
 
+            // ------------------------------------------
+            // WAIT
+            // ------------------------------------------
+
             console.log(
                 `⏳ Waiting for production build: ${jobName}`
             );
-
 
         } catch (error) {
 
@@ -104,8 +109,9 @@ async function waitForBuildJob(jobName) {
         }
 
 
-        await new Promise((resolve) =>
-            setTimeout(resolve, INTERVAL)
+        await new Promise(
+            (resolve) =>
+                setTimeout(resolve, INTERVAL)
         );
     }
 
@@ -116,21 +122,24 @@ async function waitForBuildJob(jobName) {
 }
 
 
-// --------------------------------
-// Delete the build ConfigMap once the Job is done with it
-// --------------------------------
+// ==================================================
+// DELETE BUILD CONFIGMAP
+// ==================================================
 
 async function cleanupBuildConfigMap(projectId) {
 
     const configMapName =
         `production-build-scripts-${projectId}`;
 
+
     try {
 
         await k8sCoreV1Api.deleteNamespacedConfigMap({
             name: configMapName,
+
             namespace: "default",
         });
+
 
         console.log(
             `🧹 Deleted build ConfigMap: ${configMapName}`
@@ -143,9 +152,11 @@ async function cleanupBuildConfigMap(projectId) {
             error?.statusCode ||
             error?.response?.statusCode;
 
+
         if (statusCode !== 404) {
+
             console.error(
-                `Failed to delete build ConfigMap ${configMapName}:`,
+                `❌ Failed to delete build ConfigMap ${configMapName}:`,
                 error.message
             );
         }
@@ -153,43 +164,61 @@ async function cleanupBuildConfigMap(projectId) {
 }
 
 
-// --------------------------------
-// Cleanup sandbox after a successful deploy
-// --------------------------------
+// ==================================================
+// CLEANUP SANDBOX
+// ==================================================
 
 async function cleanupProjectSandbox(project) {
 
-    const sandboxID = project.sandboxID;
+    const sandboxID =
+        project.sandboxID;
+
 
     if (!sandboxID) {
+
         return;
     }
 
+
     console.log(
-        `🧹 Cleaning up sandbox after deploy: ${sandboxID}`
+        `🧹 Cleaning sandbox: ${sandboxID}`
     );
 
-    const results = await Promise.allSettled([
-        deletePod(sandboxID),
-        deleteService(sandboxID),
-    ]);
 
-    results.forEach((r, i) => {
-        if (r.status === "rejected") {
-            console.error(
-                `Sandbox cleanup step ${i} failed for ${sandboxID}:`,
-                r.reason?.message ?? r.reason
-            );
+    const results =
+        await Promise.allSettled([
+
+            deletePod(sandboxID),
+
+            deleteService(sandboxID),
+
+        ]);
+
+
+    results.forEach(
+        (result, index) => {
+
+            if (
+                result.status === "rejected"
+            ) {
+
+                console.error(
+                    `❌ Sandbox cleanup step ${index} failed:`,
+                    result.reason?.message ??
+                    result.reason
+                );
+            }
         }
-    });
+    );
+
 
     project.sandboxID = null;
 }
 
 
-// --------------------------------
-// Deploy production
-// --------------------------------
+// ==================================================
+// DEPLOY PRODUCTION
+// ==================================================
 
 export async function deployProduction(
     projectId,
@@ -199,94 +228,122 @@ export async function deployProduction(
     try {
 
         console.log(
-            `🚀 Waiting for production build: ${projectId}`
+            `🚀 Starting production deployment: ${projectId}`
         );
 
 
-        // --------------------------------
-        // Wait for build
-        // --------------------------------
+        // ==========================================
+        // WAIT FOR BUILD
+        // ==========================================
 
         const buildStatus =
             await waitForBuildJob(jobName);
 
 
-        if (buildStatus === "failed") {
+        if (
+            buildStatus === "failed"
+        ) {
 
-            await cleanupBuildConfigMap(projectId);
+            await cleanupBuildConfigMap(
+                projectId
+            );
+
 
             await Project.findByIdAndUpdate(
                 projectId,
+
                 {
                     deploymentStatus: "failed",
                 }
             );
 
+
             return;
         }
 
 
-        await cleanupBuildConfigMap(projectId);
+        // ==========================================
+        // BUILD SUCCESS
+        // ==========================================
 
-
-        // --------------------------------
-        // Build the S3 static website URL
-        // --------------------------------
-        //
-        // No Kubernetes Deployment/Service/Ingress needed — the
-        // build already uploaded files to
-        //   s3://nexagent-bucket/<projectId>/production/
-        // via upload-production.mjs, and S3 static website hosting
-        // serves that path directly. This URL is live immediately
-        // and works permanently, independent of anything running
-        // locally.
-
-        const productionUrl =
-            `http://${S3_WEBSITE_ENDPOINT}/${projectId}/production/`;
-
-
-        console.log(
-            `🌍 Production site live at: ${productionUrl}`
+        await cleanupBuildConfigMap(
+            projectId
         );
 
 
-        // --------------------------------
-        // Load project (need sandboxID for cleanup)
-        // --------------------------------
+        // ==========================================
+        // NETLIFY URL
+        // ==========================================
+
+        const productionUrl =
+            buildProductionUrl(projectId);
+
+
+        console.log(
+            `🌍 Production URL: ${productionUrl}`
+        );
+
+
+        // ==========================================
+        // LOAD PROJECT
+        // ==========================================
 
         const project =
             await Project.findById(projectId);
 
+
         if (!project) {
+
             throw new Error(
-                `Project not found after deploy: ${projectId}`
+                `Project not found: ${projectId}`
             );
         }
 
 
-        // --------------------------------
-        // Update project — mark deployed
-        // --------------------------------
+        // ==========================================
+        // UPDATE PROJECT
+        // ==========================================
 
-        project.deploymentStatus = "deployed";
-        project.productionUrl = productionUrl;
-        project.deployedAt = new Date();
-
-        // No Kubernetes resources created for production anymore —
-        // clear these out in case they were set by an older deploy.
-        project.deploymentName = null;
-        project.serviceName = null;
-        project.ingressName = null;
+        project.deploymentStatus =
+            "deployed";
 
 
-        // --------------------------------
-        // Tear down the temporary sandbox
-        // --------------------------------
-        //
-        // Safe to do immediately — the production site is already
-        // live on S3, fully independent of the sandbox pod.
+        project.productionUrl =
+            productionUrl;
 
-        await cleanupProjectSandbox(project);
+
+        project.deployedAt =
+            new Date();
+
+
+        // ==========================================
+        // CLEAR OLD KUBERNETES PRODUCTION DATA
+        // ==========================================
+
+        project.deploymentName =
+            null;
+
+
+        project.serviceName =
+            null;
+
+
+        project.ingressName =
+            null;
+
+
+        // ==========================================
+        // CLEAN SANDBOX
+        // ==========================================
+
+        await cleanupProjectSandbox(
+            project
+        );
+
+
+        // ==========================================
+        // SAVE
+        // ==========================================
 
         await project.save();
 
@@ -294,7 +351,6 @@ export async function deployProduction(
         console.log(
             `🎉 Production deployed successfully: ${productionUrl}`
         );
-
 
     } catch (error) {
 
@@ -304,14 +360,21 @@ export async function deployProduction(
         );
 
 
-        await cleanupBuildConfigMap(projectId);
+        try {
+
+            await cleanupBuildConfigMap(
+                projectId
+            );
+
+        } catch (_) {}
 
 
         await Project.findByIdAndUpdate(
             projectId,
+
             {
                 deploymentStatus: "failed",
             }
         );
     }
-}
+} 

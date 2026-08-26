@@ -109,14 +109,14 @@ const Hero = () => {
             <div><p>UX/UI</p><p>Designer</p></div>
           </div>
           <div className="name-left relative -translate-y-[-1.2vw] mr-[2vw]" style={{ opacity: 0 }}>
-             <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] lowercase">etadicu</h1>
+             <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] ">BEYOND</h1>
           </div>
           <div className="stroke-left absolute bottom-[-3vw] right-[-5px] w-[4vw] h-[7px] bg-[#A35100] origin-right" style={{ transform: 'scaleX(0)' }} />
         </div>
         <div className="absolute left-[50%] flex flex-col items-start ml-[5px]">
           <div className="stroke-right absolute top-[4vw] left-[-8px] w-[4vw] h-[7px] bg-[#A35100] origin-left z-10" style={{ transform: 'scaleX(0)' }} />
           <div className="name-right -translate-y-[6vw] ml-[2vw]" style={{ opacity: 0 }}>
-             <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] lowercase">uminous</h1>
+             <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] ">CREATE</h1>
           </div>
           <div className="sub-label flex gap-16 mt-[-3vw] ml-[5vw] text-[15px] font-light leading-snug tracking-normal" style={{ opacity: 0 }}>
             <div><p>Located in</p><p>Venice</p></div>
