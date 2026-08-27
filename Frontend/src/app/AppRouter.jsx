@@ -10,6 +10,10 @@ import AppShell from '../components/Shells/AppShell'
 import LandingPage from '../components/Shells/LandingPage';
 import TemplateShowcase from '../components/Home/pages/TempleteShowcase';
 import HistoryPage from '../components/Shells/HistoryPage';
+import BeyondTheBrief from '../components/Home/pages/BeyondTheBrief';
+import ArchitecturalArchives from '../components/Home/pages/ArchitecturalArchives';
+import HowItWorks from '../components/Home/pages/HowItWorks';
+
 
 
 
@@ -28,6 +32,9 @@ const router = createBrowserRouter([
        { path: "/shell", element: <AppShell /> },
         { path: "/dashboard", element: <LandingPage /> },
         { path: "/history", element: <HistoryPage /> },
+        { path: "/explore", element: <BeyondTheBrief /> },
+        {path: "/templete" , element: <ArchitecturalArchives />},
+         {path: "/working" , element: <HowItWorks />},
     ],
   },
 ]);

@@ -122,26 +122,34 @@ const About = () => {
   return (
     <div ref={containerRef} className="bg-[#FDF3E4] text-[#A35100] font-sans selection:bg-[#A35100] selection:text-[#FDF3E4] antialiased">
 
-      {/* HERO SECTION */}
+    {/* HERO SECTION - UPDATED TO MATCH NEXUS CIRCLE STYLE */}
       <section className="h-[120vh] flex flex-col justify-center items-center relative px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <span className="text-[11px] uppercase tracking-[0.5em] mb-12 block font-bold opacity-60">
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ duration: 1 }}
+            className="text-[11px] uppercase tracking-[0.5em] mb-12 block font-bold"
+          >
             Est. 2025 — Digital Architecture
-          </span>
-          <div className="overflow-hidden">
-            <motion.h1
-              initial={{ y: "100%", rotate: 2 }}
-              animate={{ y: 0, rotate: 0 }}
-              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-              className="text-7xl md:text-9xl font-serif italic tracking-tighter mb-8"
+          </motion.span>
+
+          {/* Changed structure to H1 > motion.span and removed "rotate" */}
+          <h1 className="text-[12vw] md:text-9xl font-serif italic tracking-tighter mb-8 leading-none overflow-hidden whitespace-nowrap">
+            <motion.span
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-block"
             >
-              About
-            </motion.h1>
-          </div>
+              About.
+            </motion.span>
+          </h1>
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}

@@ -28,6 +28,16 @@ html, body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* Prevent horizontal jitter during GSAP pins */
+}
+
+/* TYPOGRAPHY OVERRIDES FOR BEYOND THE BRIEF */
+.font-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 /* PRECISE CUSTOM SCROLLBAR */
@@ -56,16 +66,54 @@ html, body {
   background: rgba(163, 81, 0, 0.4);
 }
 
+/* GSAP ANIMATION UTILITIES */
+.will-change-transform {
+  will-change: transform, opacity;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* NOISE GRAIN OVERLAY */
+.grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png');
+}
+
 /* UTILITIES */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 ::selection {
-  background: rgba(163, 81, 0, 0.15);
+  background: rgba(163, 81, 0, 0.25);
   color: var(--nexus-text);
 }
 
 :focus-visible {
   outline: 2px solid rgba(163, 81, 0, 0.40);
   outline-offset: 2px;
+}
+
+/* BUTTON STYLES FOR THE PAGE */
+.btn-premium {
+  @apply relative overflow-hidden px-10 py-5 uppercase text-[10px] tracking-[0.4em] font-bold transition-all duration-500;
+  border: 1px solid rgba(52, 23, 10, 0.1);
+}
+
+.btn-premium:hover {
+  @apply text-[#FDF3E4] border-[#34170A];
+}
+
+/* CLIP PATH REVEALS */
+.clip-reveal {
+  clip-path: inset(100% 0% 0% 0%);
 }
