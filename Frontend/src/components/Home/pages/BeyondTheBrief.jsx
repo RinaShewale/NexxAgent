@@ -1,12 +1,25 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SmoothScroll from '../components/SmoothScroll';
+import useAuth from '../../../hooks/useAuth'; // Ensure this path is correct for your project
+import Footer from '../components/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const BeyondTheBrief = () => {
   const containerRef = useRef(null);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleStartBuilding = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login');
+    }
+  };
 
   const assemblyImages = [
     "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop",
@@ -261,11 +274,16 @@ const BeyondTheBrief = () => {
         {/* FINAL CTA */}
         <section className="h-screen flex flex-col items-center justify-center text-center p-6 bg-[#FDF3E4]">
            <h2 className="text-5xl md:text-9xl font-serif italic tracking-tighter mb-12">The brief is <br /> only the beginning.</h2>
-           <button className="group relative px-16 py-8 overflow-hidden">
+           <button 
+            onClick={handleStartBuilding}
+            className="group relative px-16 py-8 overflow-hidden"
+           >
               <div className="absolute inset-0 bg-[#34170A] group-hover:bg-[#A35100] transition-colors duration-500" />
               <span className="relative text-[#FDF3E4] text-[11px] font-bold uppercase tracking-[0.4em]">Start Building</span>
            </button>
         </section>
+
+        <Footer />
 
         <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-[9999] mix-blend-multiply bg-[url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')]" />
         

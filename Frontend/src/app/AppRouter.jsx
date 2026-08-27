@@ -13,6 +13,7 @@ import HistoryPage from '../components/Shells/HistoryPage';
 import BeyondTheBrief from '../components/Home/pages/BeyondTheBrief';
 import ArchitecturalArchives from '../components/Home/pages/ArchitecturalArchives';
 import HowItWorks from '../components/Home/pages/HowItWorks';
+import LearnByBuilding from '../components/Home/pages/LearnByBuilding';
 
 
 
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
         { path: "/explore", element: <BeyondTheBrief /> },
         {path: "/templete" , element: <ArchitecturalArchives />},
          {path: "/working" , element: <HowItWorks />},
+         {path :"/learning", element: <LearnByBuilding />}
     ],
   },
 ]);

@@ -151,6 +151,19 @@ mongodb+srv://rinashewale6_db_user:QcQZX3snY7MdHyke@nexagent.lhwa88n.mongodb.net
 
 
 
-**Issue:** Production projects use dynamic subdomains like `projectId.app.localhost`, which only work on the local machine. Cloudflare Quick Tunnel provides one temporary URL and cannot dynamically route unlimited project subdomains without hardcoding each project.
+ 
 
-**Solution:** Use Cloudflare Tunnel with a custom domain and wildcard DNS (`*.domain.com`) to dynamically route all production projects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
