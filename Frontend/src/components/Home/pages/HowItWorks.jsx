@@ -124,7 +124,7 @@ const HowItWorks = () => {
           Architecture / Workflow
         </div>
         <div className="max-w-[90vw] lg:max-w-7xl">
-          <h1 className="hero-title text-[10vw] sm:text-[8vw] lg:text-[7vw] font-serif leading-[1.1] md:leading-[0.9] italic mb-8">
+          <h1 className="hero-title text-[9vw] sm:text-[8vw] lg:text-[7vw] font-serif leading-[1.1] md:leading-[0.9] italic mb-8">
             <span className="inline-block overflow-hidden">
                <span className="inline-block">From</span>
             </span>{" "}
