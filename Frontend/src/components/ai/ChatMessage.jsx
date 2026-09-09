@@ -92,6 +92,7 @@ export default function ChatMessage({ message, user }) { // Added user prop
                 <img 
                   src={user.avatar} 
                   alt={user.name} 
+                  referrerPolicy="no-referrer"
                   className="w-9 h-9 rounded-full object-cover" 
                 />
               ) : (

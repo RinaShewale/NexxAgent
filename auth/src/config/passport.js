@@ -19,8 +19,13 @@ passport.use(
           googleId: profile.id,
         });
 
-        // strip the size suffix (e.g. "=s96-c") from Google's photo URL
-        const avatar = profile.photos?.[0]?.value?.split("=")[0] || null;
+        // Ensure Google photo URL has a stable high-res parameter (=s192-c) instead of stripping with split('=')[0]
+        let avatar = profile.photos?.[0]?.value || null;
+        if (avatar && avatar.includes("googleusercontent.com")) {
+          avatar = avatar.includes("=")
+            ? avatar.replace(/=s\d+(-c)?.*$/, "=s192-c")
+            : `${avatar}=s192-c`;
+        }
 
         if (!user) {
           user = await User.create({

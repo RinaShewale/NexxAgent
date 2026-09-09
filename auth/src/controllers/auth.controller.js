@@ -127,6 +127,16 @@ export const authFailed = (req, res) => {
   });
 };
 
+// Helper to ensure user avatar URLs remain valid across sessions
+const sanitizeUser = (user) => {
+  if (!user) return null;
+  const userObj = user.toObject ? user.toObject() : { ...user };
+  if (userObj.avatar && userObj.avatar.includes("googleusercontent.com") && !userObj.avatar.includes("=")) {
+    userObj.avatar = `${userObj.avatar}=s192-c`;
+  }
+  return userObj;
+};
+
 // Get Current Authenticated User Controller
 export const getCurrentUser = async (req, res) => {
   try {
@@ -140,7 +150,7 @@ export const getCurrentUser = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        user: req.user,
+        user: sanitizeUser(req.user),
         token
       });
     }
@@ -158,7 +168,7 @@ export const getCurrentUser = async (req, res) => {
         if (user) {
           return res.status(200).json({
             success: true,
-            user,
+            user: sanitizeUser(user),
             token
           });
         }

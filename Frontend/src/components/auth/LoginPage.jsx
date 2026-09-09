@@ -141,6 +141,7 @@ export default function LoginPage({ onCancel }) {
                       />
                       <img
                         src={user.avatar || 'https://via.placeholder.com/64'}
+                        referrerPolicy="no-referrer"
                         className="w-20 h-20 rounded-full border-2 border-[#A35100]/20 p-1 object-cover"
                         alt="User"
                       />

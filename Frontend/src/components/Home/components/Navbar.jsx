@@ -11,6 +11,7 @@ const SideMenuContent = ({ onClose }) => {
   const orangePathRef = useRef(null);
   const containerRef = useRef(null);
   const [isPresent, safeToRemove] = usePresence();
+  const [avatarError, setAvatarError] = useState(false);
 
   // FIX 1: Freeze Auth State & Pathname
   // This prevents the menu from "flickering" or changing items while it is animating closed
@@ -131,7 +132,19 @@ const SideMenuContent = ({ onClose }) => {
             {wasAuthenticated && frozenUser && (
               <motion.div variants={itemVariants} className="flex flex-col items-center mb-10">
                 <div className="p-1 rounded-full border border-[#B55500] mb-3">
-                  <img src={frozenUser.avatar} alt={frozenUser.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover" />
+                  {frozenUser.avatar && !avatarError ? (
+                    <img
+                      src={frozenUser.avatar}
+                      alt={frozenUser.name}
+                      referrerPolicy="no-referrer"
+                      onError={() => setAvatarError(true)}
+                      className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#34170A] text-[#FFF2E0] font-serif font-medium flex items-center justify-center text-lg md:text-xl select-none">
+                      {frozenUser.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
                 </div>
                 <p className="text-[11px] tracking-widest font-bold text-[#B55500] uppercase">{frozenUser.name}</p>
                 {!menuConfig.isStandard && <p className="text-[8px] opacity-30 tracking-widest uppercase mt-1">Active Session</p>}
@@ -185,6 +198,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const { isAuthenticated, user } = useAuth();
+  const [navAvatarError, setNavAvatarError] = useState(false);
   const { scrollY } = useScroll();
   const location = useLocation();
 
@@ -228,9 +242,21 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-6 pointer-events-auto">
-          {isAuthenticated && user?.avatar && (
+          {isAuthenticated && user && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden md:block">
-              <img src={user.avatar} alt="Profile" className="w-8 h-8 rounded-full border border-[#B55500]/30 object-cover" />
+              {user.avatar && !navAvatarError ? (
+                <img
+                  src={user.avatar}
+                  alt="Profile"
+                  referrerPolicy="no-referrer"
+                  onError={() => setNavAvatarError(true)}
+                  className="w-10 h-10 rounded-full border border-[#B55500]/30 object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full border border-[#B55500]/30 bg-[#34170A] text-[#FFF2E0] font-serif font-medium flex items-center justify-center text-sm select-none">
+                  {user.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
             </motion.div>
           )}
 
