@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useLenis } from 'lenis/react'; // Synchronizes Lenis smooth-scroll with ScrollTrigger
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -8,16 +9,25 @@ if (typeof window !== 'undefined') {
 
 const KineticEditorialHero = () => {
   const containerRef = useRef(null);
-  const card1 = useRef(null);
-  const card2 = useRef(null);
-  const card3 = useRef(null);
+
+  // Separate refs for Scroll (wrapper) and Float (card) to prevent animation fighting
+  const card1Scroll = useRef(null);
+  const card1Float = useRef(null);
+
+  const card2Scroll = useRef(null);
+  const card2Float = useRef(null);
+
+  const card3Scroll = useRef(null);
+  const card3Float = useRef(null);
 
   const neverRef = useRef(null);
   const thingRef = useRef(null);
   const neverInterval = useRef(null);
   const thingInterval = useRef(null);
 
-  // Optimized font list (Removed some problematic ones that cause extreme width jumps)
+  // Syncs Lenis smooth-scrolling with GSAP ScrollTrigger
+  useLenis(ScrollTrigger.update);
+
   const fonts = [
     'serif', 'monospace', 'sans-serif', 'Impact', 'Georgia', 
     'Courier New', 'Verdana', 'Times New Roman', 'Arial Black',
@@ -27,7 +37,6 @@ const KineticEditorialHero = () => {
 
   const startCycling = (ref, intervalRef) => {
     let i = 0;
-    // Clear existing to prevent "double speed" glitch
     if (intervalRef.current) clearInterval(intervalRef.current);
     
     intervalRef.current = setInterval(() => {
@@ -45,10 +54,10 @@ const KineticEditorialHero = () => {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // Floating Animation
-      [card1.current, card2.current, card3.current].forEach((card, i) => {
+      // 1. Floating Animation (Runs on the inner cards)
+      [card1Float.current, card2Float.current, card3Float.current].forEach((card, i) => {
         gsap.to(card, {
           y: "+=15",
           rotation: i % 2 === 0 ? 1 : -1,
@@ -59,20 +68,22 @@ const KineticEditorialHero = () => {
         });
       });
 
-      // Scroll Animation
+      // 2. Scroll Animation (Runs on the outer wrappers)
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
           end: "bottom top",
           scrub: 1.2,
+          invalidateOnRefresh: true,
         }
       });
 
-      tl.to(card1.current, { y: -150, x: -20, rotation: -5 }, 0);
-      tl.to(card2.current, { y: -200, x: 40, rotation: 8 }, 0);
-      tl.to(card3.current, { y: -100, x: -30, rotation: -4 }, 0);
+      tl.to(card1Scroll.current, { y: -150, x: -20, rotation: -5 }, 0);
+      tl.to(card2Scroll.current, { y: -200, x: 40, rotation: 8 }, 0);
+      tl.to(card3Scroll.current, { y: -100, x: -30, rotation: -4 }, 0);
       
+      ScrollTrigger.refresh();
     }, containerRef);
 
     return () => {
@@ -87,11 +98,12 @@ const KineticEditorialHero = () => {
       ref={containerRef}
       className="relative w-full h-screen min-h-[700px] bg-[#FDF3E4] text-[#934B1C] overflow-hidden select-none flex flex-col justify-between p-10 md:p-20 antialiased"
     >
-      <div className="absolute inset-0 opacity-[0.12] pointer-events-none mix-blend-multiply" 
-           style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }} />
+      <div 
+        className="absolute inset-0 opacity-[0.12] pointer-events-none mix-blend-multiply" 
+        style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }} 
+      />
 
       {/* --- TYPOGRAPHY --- */}
-      {/* Added flex-col and fixed widths to prevent the "jump" */}
       <div className="w-full flex justify-start z-10">
         <h1 
           ref={neverRef}
@@ -100,7 +112,7 @@ const KineticEditorialHero = () => {
           className="inline-block text-[22vw] md:text-[130px] font-serif font-medium leading-[0.8] uppercase tracking-tighter mix-blend-multiply cursor-pointer transition-none text-left"
           style={{ 
             willChange: 'font-family',
-            minWidth: '1.2em' // Prevents container collapse
+            minWidth: '1.2em'
           }}
         >
           Never
@@ -128,42 +140,59 @@ const KineticEditorialHero = () => {
         </h1>
       </div>
 
-      {/* --- CARDS --- */}
+      {/* --- CARD 1 --- */}
       <div 
-        ref={card1}
-        className="absolute top-[20%] left-[6%] md:top-[3%] md:left-[48%] w-[150px] md:w-[220px] rounded-2xl border border-white/10 bg-[#42210B] shadow-[0_30px_60px_rgba(66,33,11,0.4)] z-20 overflow-hidden"
+        ref={card1Scroll}
+        className="absolute top-[20%] left-[6%] md:top-[3%] md:left-[48%] z-20 pointer-events-auto"
       >
-        <WindowHeader title="SYSTEM" dark />
-        <div className="py-6 md:py-10 px-4 md:px-8 flex flex-col items-center text-center text-[#F8EDDB]">
-          <div className="text-[14px] md:text-[16px] mb-2 font-serif italic">Performance</div>
-          <p className="text-[7px] md:text-[8px] leading-relaxed opacity-50 font-sans uppercase tracking-[0.2em]">Optimized React Engines.</p>
-        </div>
-      </div>
-
-      <div 
-        ref={card2}
-        className="absolute top-[52%] right-[5%] md:top-[36%] md:right-[10.3%] w-[190px] md:w-[280px] rounded-2xl border border-[#934B1C]/10 bg-[#fdf8f0]/90 backdrop-blur-md shadow-[0_25px_50px_rgba(147,75,28,0.15)] z-30 overflow-hidden"
-      >
-        <WindowHeader title="CAPABILITIES" />
-        <div className="p-4 md:p-8 flex items-center relative h-24 md:h-32">
-          <div className="absolute -left-10 md:-left-12 w-20 md:w-24 h-20 md:h-24 bg-[#42210B] rounded-full" />
-          <div className="ml-12 md:ml-16 flex flex-col">
-            <div className="text-[10px] md:text-[11px] font-sans font-black uppercase tracking-tight">Modern Web</div>
-            <div className="text-[7px] md:text-[8px] opacity-60 mt-1 line-clamp-2 md:line-clamp-none">Scalable interfaces built with precision and speed.</div>
+        <div 
+          ref={card1Float}
+          className="w-[150px] md:w-[220px] rounded-2xl border border-white/10 bg-[#42210B] shadow-[0_30px_60px_rgba(66,33,11,0.4)] overflow-hidden"
+        >
+          <WindowHeader title="SYSTEM" dark />
+          <div className="py-6 md:py-10 px-4 md:px-8 flex flex-col items-center text-center text-[#F8EDDB]">
+            <div className="text-[14px] md:text-[16px] mb-2 font-serif italic">Performance</div>
+            <p className="text-[7px] md:text-[8px] leading-relaxed opacity-50 font-sans uppercase tracking-[0.2em]">Optimized React Engines.</p>
           </div>
         </div>
       </div>
 
+      {/* --- CARD 2 --- */}
       <div 
-        ref={card3}
-        className="absolute bottom-[16%] left-[8%] md:bottom-[12%] md:left-[30%] w-[170px] md:w-[240px] rounded-2xl border border-[#934B1C]/10 bg-[#fdf8f0] shadow-[0_20px_50px_rgba(147,75,28,0.1)] z-20 overflow-hidden"
+        ref={card2Scroll}
+        className="absolute top-[52%] right-[5%] md:top-[36%] md:right-[10.3%] z-30 pointer-events-auto"
       >
-        <WindowHeader title="IDENTITY" />
-        <div className="flex flex-col items-center justify-center py-8 md:py-12 px-4 md:px-6">
-          <p className="text-[9px] md:text-[10px] font-sans uppercase tracking-[0.2em]">
-            We are <span className="font-bold border-b-2 border-[#934B1C]/20 pb-0.5">NexAgent</span>
-          </p>
-          <p className="text-[7px] opacity-50 mt-2 font-medium tracking-tighter">Engineering the future of web</p>
+        <div 
+          ref={card2Float}
+          className="w-[190px] md:w-[280px] rounded-2xl border border-[#934B1C]/10 bg-[#fdf8f0]/90 backdrop-blur-md shadow-[0_25px_50px_rgba(147,75,28,0.15)] overflow-hidden"
+        >
+          <WindowHeader title="CAPABILITIES" />
+          <div className="p-4 md:p-8 flex items-center relative h-24 md:h-32">
+            <div className="absolute -left-10 md:-left-12 w-20 md:w-24 h-20 md:h-24 bg-[#42210B] rounded-full" />
+            <div className="ml-12 md:ml-16 flex flex-col">
+              <div className="text-[10px] md:text-[11px] font-sans font-black uppercase tracking-tight">Modern Web</div>
+              <div className="text-[7px] md:text-[8px] opacity-60 mt-1 line-clamp-2 md:line-clamp-none">Scalable interfaces built with precision and speed.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- CARD 3 --- */}
+      <div 
+        ref={card3Scroll}
+        className="absolute bottom-[16%] left-[8%] md:bottom-[12%] md:left-[30%] z-20 pointer-events-auto"
+      >
+        <div 
+          ref={card3Float}
+          className="w-[170px] md:w-[240px] rounded-2xl border border-[#934B1C]/10 bg-[#fdf8f0] shadow-[0_20px_50px_rgba(147,75,28,0.1)] overflow-hidden"
+        >
+          <WindowHeader title="IDENTITY" />
+          <div className="flex flex-col items-center justify-center py-8 md:py-12 px-4 md:px-6">
+            <p className="text-[9px] md:text-[10px] font-sans uppercase tracking-[0.2em]">
+              We are <span className="font-bold border-b-2 border-[#934B1C]/20 pb-0.5">NexAgent</span>
+            </p>
+            <p className="text-[7px] opacity-50 mt-2 font-medium tracking-tighter">Engineering the future of web</p>
+          </div>
         </div>
       </div>
     </section>

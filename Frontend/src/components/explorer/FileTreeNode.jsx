@@ -59,7 +59,7 @@ export default function FileTreeNode({ node, depth = 0, onFileClick }) {
               <FileTreeNode 
                 key={child.path} 
                 node={child} 
-                depth={0} // Depth is managed by the left border indentation
+                depth={0} 
                 onFileClick={onFileClick} 
               />
             ))}

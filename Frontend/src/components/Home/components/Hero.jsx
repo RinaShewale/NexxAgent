@@ -8,23 +8,22 @@ const Hero = () => {
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      // 1. IMMEDIATE SET (Runs before timeline starts)
-      // This prevents the elements from appearing for a split second.
-      gsap.set(".l-stem", { scaleY: 0 });
-      gsap.set(".stroke-left, .stroke-right", { scaleX: 0 });
+      // 1. Initial GSAP state matching the element origins
+      gsap.set(".l-stem", { scaleY: 0, transformOrigin: "center" });
+      gsap.set(".stroke-left", { scaleX: 0, transformOrigin: "right" });
+      gsap.set(".stroke-right", { scaleX: 0, transformOrigin: "left" });
       gsap.set(".name-left, .name-right, .sub-label, .m-subtitle, .m-footer", { opacity: 0 });
       gsap.set(".m-title-inner", { y: "115%" });
       gsap.set(".m-btn-container", { scale: 0.9, opacity: 0 });
 
+      // Make the container visible now that all elements are safely at scale 0
+      gsap.set(container.current, { autoAlpha: 1 });
+
       const tl = gsap.timeline({
-        delay: 0.5,
-        onStart: () => {
-          // Reveal the container as soon as the animation actually begins
-          gsap.set(container.current, { autoAlpha: 1 });
-        }
+        delay: 0.3, // Shortened slightly for a snappy, responsive feel
       });
 
-      // 2. DESKTOP ANIMATIONS (Logic preserved)
+      // 2. DESKTOP ANIMATIONS
       tl.to(".l-stem", {
         scaleY: 1,
         transformOrigin: "center",
@@ -55,8 +54,7 @@ const Hero = () => {
           stagger: 0.1
         }, "-=0.5")
 
-        // 3. MOBILE ANIMATIONS (Logic preserved)
-        // Added absolute position '0.3' etc to match your original timeline structure
+        // 3. MOBILE ANIMATIONS
         .to(".m-subtitle", { opacity: 1, y: 0, duration: 1 }, 0.3)
         .to(".m-title-inner", {
           y: "0%",
@@ -95,7 +93,6 @@ const Hero = () => {
         backgroundColor: bgColor,
         color: themeColor,
         fontFamily: "'Inter', sans-serif",
-        // Initial state: hidden to prevent flash
         opacity: 0,
         visibility: 'hidden'
       }}
@@ -126,7 +123,11 @@ const Hero = () => {
 
       {/* ----------------- DESKTOP ONLY VIEW ----------------- */}
       <div className="hidden md:flex relative w-full max-w-[1400px] h-full items-center justify-center">
-        <div className="l-stem absolute left-1/2 -translate-x-1/2 w-[6px] h-[37vh] bg-[#A35100]" />
+        {/* Added inline transform: scaleY(0) so the line is NEVER visible prior to animation */}
+        <div
+          className="l-stem absolute left-1/2 -translate-x-1/2 w-[6px] h-[37vh] bg-[#A35100]"
+          style={{ transform: 'scaleY(0)', transformOrigin: 'center' }}
+        />
 
         <div className="absolute right-[50%] flex flex-col items-end mr-[5px]">
           <div className="sub-label flex gap-16 mb-[1vw] mr-[4vw] text-[13px] font-light text-right leading-tight tracking-wider uppercase">
@@ -140,11 +141,19 @@ const Hero = () => {
           <div className="name-left relative -translate-y-[-1.2vw] mr-[2vw]" style={{ transform: 'translateX(20px)' }}>
             <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] ">BEYOND</h1>
           </div>
-          <div className="stroke-left absolute bottom-[-3vw] right-[-5px] w-[4vw] h-[7px] bg-[#A35100] origin-right" />
+          {/* Added inline transform: scaleX(0) */}
+          <div
+            className="stroke-left absolute bottom-[-3vw] right-[-5px] w-[4vw] h-[7px] bg-[#A35100] origin-right"
+            style={{ transform: 'scaleX(0)' }}
+          />
         </div>
 
         <div className="absolute left-[50%] flex flex-col items-start ml-[5px]">
-          <div className="stroke-right absolute top-[4vw] left-[-8px] w-[4vw] h-[7px] bg-[#A35100] origin-left z-10" />
+          {/* Added inline transform: scaleX(0) */}
+          <div
+            className="stroke-right absolute top-[4vw] left-[-8px] w-[4vw] h-[7px] bg-[#A35100] origin-left z-10"
+            style={{ transform: 'scaleX(0)' }}
+          />
           <div className="name-right -translate-y-[6vw] ml-[2vw]" style={{ transform: 'translateX(-20px)' }}>
             <h1 className="text-[11vw] leading-[0.8] font-[100] tracking-[0.03em] ">CREATE</h1>
           </div>

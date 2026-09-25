@@ -35,9 +35,14 @@ spec:
             - name: MISTRAL_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: mistral-secret
+                  name: api-keys
                   key: MISTRAL_API_KEY
-
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-keys
+                  key: GOOGLE_API_KEY
+                  
           resources:
             requests:
               cpu: "100m"

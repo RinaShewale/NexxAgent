@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useLenis } from 'lenis/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -8,6 +9,9 @@ const DescriptionSection = () => {
   const containerRef = useRef(null);
   const spineRef = useRef(null);
   const dotRef = useRef(null);
+
+  // Syncs Lenis smooth scrolling with ScrollTrigger
+  useLenis(ScrollTrigger.update);
 
   const data = [
     {
@@ -37,47 +41,71 @@ const DescriptionSection = () => {
       let { isDesktop } = context.conditions;
 
       if (isDesktop) {
-        // --- DESKTOP ANIMATION (UNTOUCHED) ---
+        // --- DESKTOP ANIMATION ---
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
             start: "top top",
-            end: "+=500%",
+            end: "+=950%",            // Generous scroll distance: ~300% per slide so it feels slow and relaxed
             pin: true,
-            scrub: 1.5,
+            scrub: 1.8,              // Slower, weighted scrub catch-up (eliminates fast jerkiness)
+            anticipatePin: 1,        // Eliminates pin jump
+            invalidateOnRefresh: true,
           }
         });
 
-        gsap.set(".text-group", { opacity: 0, y: 40, filter: "blur(15px)" });
+        // Initial setup
+        gsap.set(".text-group", { opacity: 0, y: 40, filter: "blur(12px)" });
         gsap.set(".char", { y: 120, opacity: 0, skewX: 20, rotateY: 45 });
         gsap.set(".text-group-0", { opacity: 1, y: 0, filter: "blur(0px)" });
         gsap.set(".word-0 .char", { y: 0, opacity: 1, skewX: 0, rotateY: 0 });
 
-        tl.to(spineRef.current, { scaleY: 1, ease: "none" }, 0);
-        tl.to(dotRef.current, { top: "100%", ease: "none" }, 0);
+        // Timing constants for balanced reading pauses
+        const dwellTime = 2.6;       // Generous reading hold on each slide
+        const transitionTime = 1.2;  // Smooth, gradual transition time
+        const step = dwellTime + transitionTime;
 
+        // Slide Transitions with dedicated hold/reading pauses
         data.forEach((_, i) => {
           if (i === data.length - 1) return;
           const nextIndex = i + 1;
-          const triggerPoint = i + 0.5;
-          tl.to(`.text-group-${i}`, { opacity: 0, y: -40, filter: "blur(10px)", duration: 0.6, ease: "power2.in" }, triggerPoint);
-          tl.to(`.word-${i} .char`, { y: -100, opacity: 0, skewX: -20, stagger: 0.01, ease: "expo.in" }, triggerPoint);
-          tl.to(dotRef.current, { scale: 2, duration: 0.2, yoyo: true, repeat: 1 }, triggerPoint + 0.2);
-          tl.to(`.text-group-${nextIndex}`, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "power4.out" }, triggerPoint + 0.4);
-          tl.to(`.word-${nextIndex} .char`, { y: 0, opacity: 1, skewX: 0, rotateY: 0, stagger: 0.03, ease: "back.out(1.2)" }, triggerPoint + 0.4);
+          const switchStart = dwellTime + i * step;
+
+          // Outgoing slide
+          tl.to(`.text-group-${i}`, { opacity: 0, y: -40, filter: "blur(10px)", duration: 0.9, ease: "power2.inOut" }, switchStart);
+          tl.to(`.word-${i} .char`, { y: -100, opacity: 0, skewX: -20, stagger: 0.015, ease: "power2.in" }, switchStart);
+
+          // Dot pulse at midpoint of switch
+          tl.to(dotRef.current, { scale: 2.2, duration: 0.35, yoyo: true, repeat: 1, ease: "power1.inOut" }, switchStart + 0.3);
+
+          // Incoming slide
+          tl.to(`.text-group-${nextIndex}`, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, ease: "power3.out" }, switchStart + 0.45);
+          tl.to(`.word-${nextIndex} .char`, { y: 0, opacity: 1, skewX: 0, rotateY: 0, stagger: 0.025, ease: "back.out(1.1)" }, switchStart + 0.45);
         });
 
-        gsap.to(".floating-content", { y: "-=15", duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        // Total duration includes full reading time for the FINAL slide before unpinning
+        const totalDuration = (data.length - 1) * step + dwellTime;
+
+        // Spine and dot fill evenly across the ENTIRE duration
+        tl.to(spineRef.current, { scaleY: 1, ease: "none", duration: totalDuration }, 0);
+        tl.to(dotRef.current, { top: "100%", ease: "none", duration: totalDuration }, 0);
+
+        // Ensures timeline preserves the final dwell pause
+        tl.set({}, {}, totalDuration);
+
+        // Floating ambient effect
+        gsap.to(".floating-content", { y: "-=12", duration: 3.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
 
       } else {
-        // --- MOBILE ANIMATION (FIXED) ---
+        // --- MOBILE ANIMATION ---
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
             start: "top top",
-            end: "+=300%",
+            end: "+=650%",            // Extended scroll runway on mobile
             pin: true,
-            scrub: 1,
+            scrub: 1.5,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           }
         });
@@ -85,12 +113,24 @@ const DescriptionSection = () => {
         gsap.set(".text-group", { opacity: 0, y: 30, filter: "blur(10px)" });
         gsap.set(".text-group-0", { opacity: 1, y: 0, filter: "blur(0px)" });
 
+        const dwellMobile = 2.2;
+        const transitionMobile = 1.0;
+        const stepMobile = dwellMobile + transitionMobile;
+
+        // Mobile pacing with pause to read each slide
         data.forEach((_, i) => {
           if (i === data.length - 1) return;
-          tl.to(`.text-group-${i}`, { opacity: 0, y: -30, filter: "blur(10px)", duration: 1 }, i)
-            .to(`.text-group-${i + 1}`, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1 }, i + 0.5);
+          const switchStart = dwellMobile + i * stepMobile;
+          tl.to(`.text-group-${i}`, { opacity: 0, y: -30, filter: "blur(8px)", duration: 0.8, ease: "power2.inOut" }, switchStart)
+            .to(`.text-group-${i + 1}`, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "power3.out" }, switchStart + 0.4);
         });
+
+        // Ensure final slide on mobile stays visible before unpinning
+        const totalMobileDuration = (data.length - 1) * stepMobile + dwellMobile;
+        tl.set({}, {}, totalMobileDuration);
       }
+
+      ScrollTrigger.refresh();
     });
 
     return () => mm.revert();
@@ -105,7 +145,7 @@ const DescriptionSection = () => {
 
       <div className="flex flex-col lg:flex-row h-full w-full max-w-screen-xl mx-auto items-center justify-center relative px-8 lg:px-16 z-10">
 
-        {/* CONTENT AREA - CENTERED ON MOBILE */}
+        {/* CONTENT AREA */}
         <div className="w-full lg:w-1/2 floating-content relative h-[60vh] lg:h-[500px] flex items-center justify-center">
           {data.map((item, i) => {
             const parts = item.desc.split(': ');
@@ -131,7 +171,7 @@ const DescriptionSection = () => {
                   {parts[1]}
                 </p>
               </div>
-            )
+            );
           })}
         </div>
 

@@ -9,8 +9,10 @@ export function useProjects() {
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
       const data = await getProjects();
+
       setProjects(data.projects || []);
     } catch (err) {
       setError(err.message || 'Failed to load history');
@@ -19,5 +21,10 @@ export function useProjects() {
     }
   }, []);
 
-  return { projects, loading, error, fetchProjects };
+  return {
+    projects,
+    loading,
+    error,
+    fetchProjects,
+  };
 }

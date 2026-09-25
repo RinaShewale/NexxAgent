@@ -29,21 +29,24 @@ const ImageSplitSection = () => {
         // --- IMPROVED DESKTOP LOGIC ---
         
         // 1. The Center Line
-        gsap.fromTo(
-          ".split-center-line",
-          { scaleY: 0 },
-          {
-            scaleY: 1,
-            transformOrigin: "top center",
-            ease: "none",
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top 80%", 
-              end: "bottom center",
-              scrub: 1.5,
+        const line = containerRef.current.querySelector('.split-center-line');
+        if (line) {
+          gsap.fromTo(
+            line,
+            { scaleY: 0, transformOrigin: "top center" },
+            {
+              scaleY: 1,
+              transformOrigin: "top center",
+              ease: "none",
+              scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top 80%", 
+                end: "bottom center",
+                scrub: 1.5,
+              }
             }
-          }
-        );
+          );
+        }
 
         // 2. The Cards (Scattering Effect)
         cards.forEach((card, i) => {
@@ -129,7 +132,7 @@ const ImageSplitSection = () => {
       className="relative w-full min-h-[10vh] py-24 bg-[#FDF3E4] flex items-center justify-center overflow-hidden lg:overflow-visible"
     >
       <div 
-        className="split-center-line hidden lg:block absolute left-1/2 -translate-x-1/2 -top-[31.5vh] w-[4px] bg-[#A35100] z-10 origin-top" 
+        className="split-center-line hidden lg:block absolute left-1/2 -translate-x-1/2 -top-[31.5vh] w-[4px] bg-[#A35100] z-10 origin-top scale-y-0" 
         style={{ height: 'calc(100% + 31.5vh)' }}
       />
 

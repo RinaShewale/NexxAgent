@@ -8,9 +8,9 @@ export default function FileExplorer({ agentUrl, onFileClick }) {
   const { tree, loading, refresh } = useFileTree(agentUrl);
 
   return (
-    <div className="flex flex-col h-full bg-[#EBE0CF] select-none border-r border-[#A35100]/10 shadow-inner">
+    <div className="flex flex-col h-full max-h-full bg-[#EBE0CF] select-none border-r border-[#A35100]/10 shadow-inner overflow-hidden">
       {/* Header: More compact and professional */}
-      <div className="p-5 border-b border-[#A35100]/10">
+      <div className="p-5 border-b border-[#A35100]/10 flex-shrink-0">
         <div className="flex items-center justify-between group">
           <div className="space-y-0.5">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#34170A]">
@@ -37,7 +37,7 @@ export default function FileExplorer({ agentUrl, onFileClick }) {
       </div>
 
       {/* Progress Bar (Integrated into header bottom) */}
-      <div className="h-[1px] w-full bg-transparent overflow-hidden">
+      <div className="h-[1px] w-full bg-transparent overflow-hidden flex-shrink-0">
         {loading && (
           <motion.div 
             initial={{ x: '-100%' }}
@@ -48,8 +48,17 @@ export default function FileExplorer({ agentUrl, onFileClick }) {
         )}
       </div>
 
-      {/* Explorer Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2 custom-scrollbar">
+      {/* 
+        Explorer Content:
+        - data-lenis-prevent: Tells Lenis not to block mouse wheel/touch here
+        - min-h-0: Fixes flexbox child height so overflow-y-auto works properly
+        - overscroll-contain: Prevents wheel scroll from bubbling up
+      */}
+      <div 
+        data-lenis-prevent
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-2 custom-scrollbar overscroll-contain"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <AnimatePresence mode="wait">
           {loading ? (
             <div className="p-5 space-y-4">
@@ -78,7 +87,7 @@ export default function FileExplorer({ agentUrl, onFileClick }) {
       </div>
 
       {/* Footer: Refined status bar */}
-      <div className="px-4 py-3 bg-[#A35100]/5 border-t border-[#A35100]/10 flex items-center justify-between">
+      <div className="px-4 py-3 bg-[#A35100]/5 border-t border-[#A35100]/10 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="relative">
              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
