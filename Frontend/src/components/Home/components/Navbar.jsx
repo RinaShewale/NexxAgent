@@ -31,9 +31,10 @@ const SideMenuContent = ({ onClose }) => {
       { label: 'Home', path: '/' },
       { label: 'About', path: '/about' },
       { label: 'Community', path: '/community' },
-       { label: 'Websites', path: '/websites' },
-      { label: 'Dashboard', path: '/dashboard' },
+      { label: 'Websites', path: '/websites' },
+      ...(wasAuthenticated ? [{ label: 'Dashboard', path: '/dashboard' }] : []),
       { label: 'Pricing', path: '/pricing' },
+      
     ];
 
     const standardPaths = ['/', '/about', '/community', '/websites', '/pricing', '/login'];
@@ -43,7 +44,7 @@ const SideMenuContent = ({ onClose }) => {
       isStandard: isStandardPage,
       items: isStandardPage ? standardItems : playgroundItems
     };
-  }, [menuPathname]);
+  }, [menuPathname, wasAuthenticated]);
 
   const initialPath = "M 100 0 L 100 100 L 100 100 Q 100 50 100 0 Z";
   const targetPath = "M 100 0 L 100 100 L 20 100 Q 0 50 20 0 Z";

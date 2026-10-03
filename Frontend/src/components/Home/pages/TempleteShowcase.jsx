@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, Sparkles, Play, ExternalLink, ArrowRight, Compass, Flame, Box, ShieldCheck } from 'lucide-react';
 import Lenis from '@studio-freight/lenis';
+import useAuth from '../../../hooks/useAuth';
 import Footer from '../components/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -88,6 +90,18 @@ const TemplateShowcase = () => {
   const manifestoRef = useRef(null);
   const ctaBoxRef = useRef(null);
 
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  // Check auth status: route to dashboard if logged in, otherwise route to login
+  const handleStartProject = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login');
+    }
+  };
+
   useEffect(() => {
     // 1. Initialize Lenis Smooth Scroll
     const lenis = new Lenis({
@@ -159,7 +173,7 @@ const TemplateShowcase = () => {
             scrollTrigger: {
               trigger: card,
               start: "top 88%",
-              once: true, // Once triggered, stays visible permanently
+              once: true,
             }
           }
         );
@@ -202,7 +216,6 @@ const TemplateShowcase = () => {
         );
       }
 
-      // Refresh ScrollTrigger to recalculate exact offsets after pinning
       ScrollTrigger.refresh();
     });
 
@@ -214,10 +227,6 @@ const TemplateShowcase = () => {
 
   const scrollToGallery = () => {
     galleryRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleStartProject = () => {
-    window.location.href = '/dashboard';
   };
 
   return (
@@ -261,11 +270,12 @@ const TemplateShowcase = () => {
                 <span className="not-italic font-medium text-white">digital craft</span>
               </h1>
               
+              {/* Explore Studio Button */}
               <motion.button 
                 onClick={handleStartProject}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
-                className="group relative px-8 py-4 md:px-12 md:py-6 bg-white text-black rounded-full font-bold text-[10px] md:text-[11px] tracking-[0.25em] overflow-hidden transition-all shadow-2xl"
+                className="group relative px-8 py-4 md:px-12 md:py-6 bg-white text-black rounded-full font-bold text-[10px] md:text-[11px] tracking-[0.25em] overflow-hidden transition-all shadow-2xl cursor-pointer"
               >
                 <span className="relative z-10 group-hover:text-white transition-colors duration-500 uppercase flex items-center gap-3">
                   Explore Studio
@@ -297,8 +307,6 @@ const TemplateShowcase = () => {
               <span className="italic text-[var(--nexus-accent)]">modern aesthetic.</span>
             </h2>
           </motion.div>
-          
-         
         </div>
 
         {/* Responsive Grid */}
@@ -309,9 +317,7 @@ const TemplateShowcase = () => {
         </div>
       </section>
 
-   
-
-      {/* --- GSAP SECTION 1: KINETIC MANIFESTO REVEAL --- */}
+      {/* --- KINETIC MANIFESTO REVEAL --- */}
       <section 
         ref={manifestoRef}
         className="relative z-20 py-24 md:py-36 px-5 sm:px-8 md:px-16 max-w-[1500px] mx-auto text-center"
@@ -334,7 +340,7 @@ const TemplateShowcase = () => {
         </h2>
       </section>
 
-      {/* --- GSAP SECTION 3: STATEMENT CTA BANNER --- */}
+      {/* --- STATEMENT CTA BANNER --- */}
       <section className="relative z-20 pb-24 md:pb-36 px-5 sm:px-8 md:px-16 max-w-[1700px] mx-auto">
         <div 
           ref={ctaBoxRef}
@@ -359,19 +365,15 @@ const TemplateShowcase = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-5">
-              <motion.a 
-                href="/dashboard"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleStartProject();
-                }}
+              <motion.button 
+                onClick={handleStartProject}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="px-9 py-5 md:px-12 md:py-6 bg-white text-black rounded-full font-bold text-[10px] md:text-[11px] tracking-[0.25em] uppercase text-center transition-all shadow-xl hover:bg-[var(--nexus-accent)] hover:text-white inline-flex items-center justify-center gap-3 cursor-pointer"
               >
                 <span>Enter Dashboard</span>
                 <ArrowUpRight size={16} />
-              </motion.a>
+              </motion.button>
 
               <a 
                 href="mailto:contact@nexusagent.com"

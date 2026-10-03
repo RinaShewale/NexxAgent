@@ -6,6 +6,7 @@ import { TransitionPathProvider, useTransitionPath } from "../components/Home/Lo
 const hiddenNavbarPaths = [
   '/login',
   '/shell', // Add your editor/app path here
+  '/settings', // Add your settings path here
 ];
 
 const MainLayoutInner = () => {

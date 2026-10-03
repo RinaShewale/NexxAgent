@@ -1,11 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
-import useAuth from '../../hooks/useAuth';
+import { useNavigate, useLocation } from 'react-router-dom';
+import useAuth, { useAuth as useAuthNamed } from '../../hooks/useAuth';
+
+const useAuthHook = useAuth || useAuthNamed;
 
 export default function LoginPage({ onCancel }) {
-  const { loginWithGoogle, loading, user, isAuthenticated, logout } = useAuth();
+  const { loginWithGoogle, loading, user, isAuthenticated, logout } = useAuthHook();
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // If user was redirected from /dashboard, send them there, else default to /dashboard
+  const destination = location.state?.from?.pathname || '/dashboard';
 
   const cardRef = useRef(null);
   const glowRef1 = useRef(null);
@@ -50,6 +59,32 @@ export default function LoginPage({ onCancel }) {
 
     return () => tl.kill();
   }, []);
+
+  // When user is authenticated after login click, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated && isRedirecting) {
+      navigate(destination, { replace: true });
+    }
+  }, [isAuthenticated, isRedirecting, destination, navigate]);
+
+  const handleResumeSession = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      navigate(destination, { replace: true });
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      setIsRedirecting(true);
+      await loginWithGoogle();
+      navigate(destination, { replace: true });
+    } catch (err) {
+      console.error("Login failed:", err);
+      setIsRedirecting(false);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -154,14 +189,14 @@ export default function LoginPage({ onCancel }) {
 
                   <div className="space-y-3">
                     <button
-                      onClick={onCancel}
-                      className="w-full py-4 rounded-2xl bg-[#A35100] text-[#FDF3E4] font-bold text-[10px] uppercase tracking-[0.3em] shadow-lg shadow-[#A35100]/20 hover:translate-y-[-2px] active:translate-y-[0px] transition-all"
+                      onClick={handleResumeSession}
+                      className="w-full py-4 rounded-2xl bg-[#A35100] text-[#FDF3E4] font-bold text-[10px] uppercase tracking-[0.3em] shadow-lg shadow-[#A35100]/20 hover:translate-y-[-2px] active:translate-y-[0px] transition-all cursor-pointer"
                     >
                       Resume Session
                     </button>
                     <button
                       onClick={logout}
-                      className="w-full py-4 rounded-2xl border border-[#A35100]/10 text-[#A35100]/50 font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all"
+                      className="w-full py-4 rounded-2xl border border-[#A35100]/10 text-[#A35100]/50 font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all cursor-pointer"
                     >
                       Disconnect
                     </button>
@@ -178,12 +213,9 @@ export default function LoginPage({ onCancel }) {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setIsRedirecting(true);
-                      loginWithGoogle();
-                    }}
+                    onClick={handleLogin}
                     disabled={loading || isRedirecting}
-                    className="group relative w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl bg-[#A35100] text-[#FDF3E4] transition-all overflow-hidden"
+                    className="group relative w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl bg-[#A35100] text-[#FDF3E4] transition-all overflow-hidden cursor-pointer"
                   >
                     {/* Magnetic Button Shine */}
                     <motion.div 

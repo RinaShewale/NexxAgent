@@ -3,7 +3,12 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from '@studio-freight/lenis';
 import { motion, useInView } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
+import useAuth, { useAuth as useAuthNamed } from '../../../hooks/useAuth';
+
+// Supports both default and named export of useAuth
+const useAuthHook = useAuth || useAuthNamed;
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,6 +45,19 @@ const About = () => {
   const containerRef = useRef(null);
   const horizontalSectionRef = useRef(null);
   const horizontalContentRef = useRef(null);
+
+  // Authentication & Navigation
+  const { isAuthenticated } = useAuthHook();
+  const navigate = useNavigate();
+
+  const handleExploreClick = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      // Send unauthenticated users to /login, remembering to go to /dashboard after login
+      navigate('/login', { state: { from: { pathname: '/dashboard' } } });
+    }
+  };
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
@@ -122,7 +140,7 @@ const About = () => {
   return (
     <div ref={containerRef} className="bg-[#FDF3E4] text-[#A35100] font-sans selection:bg-[#A35100] selection:text-[#FDF3E4] antialiased">
 
-    {/* HERO SECTION - UPDATED TO MATCH NEXUS CIRCLE STYLE */}
+      {/* HERO SECTION */}
       <section className="h-[120vh] flex flex-col justify-center items-center relative px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -138,7 +156,6 @@ const About = () => {
             Est. 2025 — Digital Architecture
           </motion.span>
 
-          {/* Changed structure to H1 > motion.span and removed "rotate" */}
           <h1 className="text-[12vw] md:text-9xl font-serif italic tracking-tighter mb-8 leading-none overflow-hidden whitespace-nowrap">
             <motion.span
               initial={{ y: "100%" }}
@@ -181,7 +198,6 @@ const About = () => {
 
           {PROJECTS.map((proj, i) => (
             <div key={i} className="project-card w-[350px] flex-shrink-0 group cursor-crosshair">
-              {/* Changed aspect-square and simplified width */}
               <div className="img-mask relative aspect-square overflow-hidden bg-[#EBE0CF]">
                 <img
                   src={proj.img}
@@ -200,14 +216,12 @@ const About = () => {
             </div>
           ))}
 
-          {/* COLOR FILL OUTRO - Fixed descender clipping */}
+          {/* COLOR FILL OUTRO */}
           <div className="outro-wrapper relative flex-shrink-0 pr-[20vw] flex items-center">
-            {/* Background Text */}
             <h2 className="text-[12vw] font-serif italic opacity-5 leading-[1.2] py-10 select-none whitespace-nowrap tracking-tighter">
               NexAgent
             </h2>
 
-            {/* Foreground (Filled) Text */}
             <h2 className="outro-fill absolute left-0 top-1/2 -translate-y-1/2 text-[12vw] font-serif italic text-[#A35100] leading-[1.2] py-10 select-none whitespace-nowrap tracking-tighter">
               NexAgent
             </h2>
@@ -235,9 +249,10 @@ const About = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group relative text-[11px] font-bold uppercase tracking-[0.5em] px-12 py-6 overflow-hidden transition-all border border-[#A35100]/20"
+              onClick={handleExploreClick}
+              className="group relative text-[11px] font-bold uppercase tracking-[0.5em] px-12 py-6 overflow-hidden transition-all border border-[#A35100]/20 cursor-pointer"
             >
-              <span className="relative z-10 group-hover:text-[#FDF3E4] transition-colors duration-500">Contact Studio</span>
+              <span className="relative z-10 group-hover:text-[#FDF3E4] transition-colors duration-500">Explore now</span>
               <div className="absolute inset-0 bg-[#A35100] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
             </motion.button>
           </div>
@@ -249,7 +264,8 @@ const About = () => {
       </section>
 
       {/* Grain Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-[100] mix-blend-multiply"
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-[0.05] z-[100] mix-blend-multiply"
         style={{ backgroundImage: `url('https://res.cloudinary.com/dvwthyt94/image/upload/v1672322316/noise_yvsk9m.png')` }}
       />
 
