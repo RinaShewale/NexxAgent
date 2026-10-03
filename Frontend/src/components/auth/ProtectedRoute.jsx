@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import authHook, { useAuth as useAuthNamed } from '../../hooks/useAuth';
 
@@ -9,13 +8,9 @@ export default function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuthHook();
   const location = useLocation();
 
-  // 1. While authentication status is checking, show a clean loading indicator
+  // Avoid rendering protected content until authentication has been checked.
   if (loading) {
-    return (
-      <div className="fixed inset-0 w-screen h-screen bg-[#FDF3E4] flex items-center justify-center z-50">
-        <div className="w-8 h-8 border-2 border-[#A35100] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return null;
   }
 
   // 2. If user is NOT logged in, redirect to /login and preserve attempted URL

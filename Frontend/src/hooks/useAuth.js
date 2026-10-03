@@ -10,10 +10,13 @@ export function useAuth() {
   const dispatch = useDispatch();
   const { user, isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
-  // Automatically check session status on initial mount if loading
+  // Check the session on first load, but don't invalidate an authenticated
+  // session with a redundant request every time a route mounts.
   useEffect(() => {
-    dispatch(fetchCurrentUser());
-  }, [dispatch]);
+    if (loading && !user) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [dispatch, loading, user]);
 
   /**
    * Redirect to Google OAuth URL for registration/login

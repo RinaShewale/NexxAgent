@@ -60,12 +60,12 @@ export default function LoginPage({ onCancel }) {
     return () => tl.kill();
   }, []);
 
-  // When user is authenticated after login click, redirect to dashboard
+  // Signed-in users should not remain on the login page.
   useEffect(() => {
-    if (isAuthenticated && isRedirecting) {
+    if (isAuthenticated && !loading) {
       navigate(destination, { replace: true });
     }
-  }, [isAuthenticated, isRedirecting, destination, navigate]);
+  }, [isAuthenticated, loading, destination, navigate]);
 
   const handleResumeSession = () => {
     if (onCancel) {

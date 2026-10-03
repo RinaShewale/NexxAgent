@@ -1,36 +1,23 @@
 import { Zap } from "lucide-react";
-
-import useDeployProject from "../../hooks/useDeployProject";
+import { useNavigate } from "react-router-dom";
 
 const DeployButton = ({ projectId }) => {
-    const {
-        deploy,
-        loading,
-    } = useDeployProject();
+    const navigate = useNavigate();
 
-    const handleDeploy = async () => {
+    const handleDeploy = () => {
         if (!projectId) {
             console.error("Project ID is missing");
             return;
         }
 
-        try {
-            await deploy(projectId);
-
-            console.log("🚀 Deployment started successfully");
-
-        } catch (error) {
-            console.error(
-                "❌ Deployment failed:",
-                error
-            );
-        }
+        navigate("/deployment", { state: { projectId } });
     };
 
     return (
         <button
             onClick={handleDeploy}
-            disabled={loading}
+            disabled={!projectId}
+            title={!projectId ? "Project is not ready to deploy" : undefined}
             className="
                 flex
                 items-center
@@ -59,9 +46,7 @@ const DeployButton = ({ projectId }) => {
             />
 
             <span>
-                {loading
-                    ? "Deploying..."
-                    : "Deploy Vision"}
+                Deploy Vision
             </span>
         </button>
     );

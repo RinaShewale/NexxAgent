@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import HomePage from '../components/Home/pages/HomePage';
@@ -10,6 +9,7 @@ import AppShell from '../components/Shells/AppShell';
 import LandingPage from '../components/Shells/LandingPage';
 import TemplateShowcase from '../components/Home/pages/TempleteShowcase';
 import HistoryPage from '../components/Shells/HistoryPage';
+import DeploymentPage from '../components/Shells/DeploymentPage';
 import BeyondTheBrief from '../components/Home/pages/BeyondTheBrief';
 import ArchitecturalArchives from '../components/Home/pages/ArchitecturalArchives';
 import HowItWorks from '../components/Home/pages/HowItWorks';
@@ -49,18 +49,21 @@ const router = createBrowserRouter([
       { 
         path: "/shell", 
         element: (
-          
+        
             <AppShell />
-         
         ) 
       },
       { 
         path: "/history", 
         element: (
-        
-            <HistoryPage />
          
+            <HistoryPage />
+
         ) 
+      },
+      {
+        path: "/deployment",
+        element: <DeploymentPage />,
       },
     ],
   },

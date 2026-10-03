@@ -1,4 +1,3 @@
-import React from 'react';
 import PageTransition from "../components/Home/Loading/PageTransition";
 import Navbar from "../components/Home/components/Navbar";
 import { TransitionPathProvider, useTransitionPath } from "../components/Home/Loading/Transitionpathcontext"; // adjust path as needed
@@ -6,6 +5,7 @@ import { TransitionPathProvider, useTransitionPath } from "../components/Home/Lo
 const hiddenNavbarPaths = [
   '/login',
   '/shell', // Add your editor/app path here
+  '/deployment',
   '/settings', // Add your settings path here
 ];
 
