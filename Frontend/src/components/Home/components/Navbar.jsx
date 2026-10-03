@@ -21,9 +21,9 @@ const SideMenuContent = ({ onClose }) => {
 
   const menuConfig = useMemo(() => {
     const playgroundItems = [
+      { label: 'Home', path: '/' },
       { label: 'New Chat', path: '/dashboard' },
       { label: 'History', path: '/history' },
-      { label: 'Community', path: '/community' },
       { label: 'Settings', path: '/settings' },
     ];
 
